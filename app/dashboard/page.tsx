@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { getActiveKey } from "@/lib/api-keys";
 import CopyButton from "@/components/CopyButton";
 import { PLANS, type PlanId } from "@/lib/plans";
+import { WeeklyUsageChart, RecentPresets } from "@/components/DashboardCharts";
 
 async function getDashboardStats(userId: string) {
   const now = new Date();
@@ -19,7 +20,12 @@ async function getDashboardStats(userId: string) {
 
   if (!dbUser) return null;
 
-  const [callsResult, keysResult, avgResult, recentResult] = await Promise.all([
+  // 7-day window for bar chart
+  const sevenDaysAgo = new Date(now);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+
+  const [callsResult, keysResult, avgResult, recentResult, weekResult, configsResult] = await Promise.all([
     // Calls this month
     supabaseAdmin
       .from("usage_logs")
@@ -46,6 +52,19 @@ async function getDashboardStats(userId: string) {
       .eq("user_id", dbUser.id)
       .order("created_at", { ascending: false })
       .limit(10),
+    // Last 7 days of calls (for bar chart — just timestamps)
+    supabaseAdmin
+      .from("usage_logs")
+      .select("created_at")
+      .eq("user_id", dbUser.id)
+      .gte("created_at", sevenDaysAgo.toISOString()),
+    // Recent saved configs (for quick-launch cards)
+    supabaseAdmin
+      .from("saved_configs")
+      .select("id, name, series_slugs, from_year, to_year, format, description")
+      .eq("user_id", dbUser.id)
+      .order("created_at", { ascending: false })
+      .limit(3),
   ]);
 
   const avgMs =
@@ -56,6 +75,21 @@ async function getDashboardStats(userId: string) {
         )
       : null;
 
+  // Build 7-day daily buckets
+  const dayCountMap: Record<string, number> = {};
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const key = d.toLocaleDateString("en-US", { weekday: "short", day: "numeric" }); // e.g. "Mon 10"
+    dayCountMap[key] = 0;
+  }
+  (weekResult.data ?? []).forEach((row) => {
+    const d = new Date(row.created_at);
+    const key = d.toLocaleDateString("en-US", { weekday: "short", day: "numeric" });
+    if (key in dayCountMap) dayCountMap[key]++;
+  });
+  const weeklyDays = Object.entries(dayCountMap).map(([date, count]) => ({ date, count }));
+
   return {
     dbUserId: dbUser.id,
     plan: (dbUser.plan ?? "free") as PlanId,
@@ -63,6 +97,8 @@ async function getDashboardStats(userId: string) {
     activeKeys: keysResult.count ?? 0,
     avgResponseMs: avgMs,
     recentCalls: recentResult.data ?? [],
+    weeklyDays,
+    recentConfigs: configsResult.data ?? [],
   };
 }
 
@@ -148,6 +184,49 @@ export default async function DashboardPage() {
           sub="This month"
         />
       </div>
+
+      {/* Usage chart + recent presets side-by-side */}
+      {stats && (
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+          <div className="lg:col-span-3">
+            <WeeklyUsageChart days={stats.weeklyDays} />
+          </div>
+          <div className="lg:col-span-2">
+            {stats.recentConfigs.length > 0 ? (
+              <RecentPresets configs={stats.recentConfigs} />
+            ) : (
+              <div
+                style={{
+                  background: "#111",
+                  border: "1px solid #1e1e1e",
+                  borderRadius: "12px",
+                  padding: "1.5rem 1.25rem",
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.5rem",
+                  textAlign: "center",
+                }}
+              >
+                <p style={{ fontSize: "0.8rem", color: "#333", margin: 0 }}>No saved presets yet</p>
+                <a
+                  href="https://costsignal.io/builder"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    fontSize: "0.78rem", color: "#4ade80",
+                    textDecoration: "none", fontWeight: 600,
+                  }}
+                >
+                  Open Builder →
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Quick key copy */}
       {activeKey && (
