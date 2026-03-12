@@ -20,8 +20,9 @@ export default async function HomePage() {
           Cost<span style={{ color: "#4ade80" }}>Signal</span>
           <span style={{ marginLeft: "0.5rem", fontSize: "0.7rem", fontWeight: 500, color: "#555", letterSpacing: "0.06em", textTransform: "uppercase" }}>Portal</span>
         </div>
-        <div style={{ display: "flex", gap: "0.75rem" }}>
+        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
           <Link href="https://costsignal.io" style={{ fontSize: "0.8rem", color: "#555", textDecoration: "none", padding: "0.35rem 0.75rem", border: "1px solid #222", borderRadius: "6px" }}>← costsignal.io</Link>
+          <Link href="/pricing" style={{ fontSize: "0.8rem", color: "#888", textDecoration: "none", padding: "0.35rem 0.75rem" }}>Pricing</Link>
           <Link href="/sign-in" style={{ fontSize: "0.8rem", color: "#aaa", textDecoration: "none", padding: "0.35rem 0.75rem", border: "1px solid #222", borderRadius: "6px" }}>Sign in</Link>
           <Link href="/sign-up" style={{ fontSize: "0.85rem", color: "#000", fontWeight: 700, textDecoration: "none", padding: "0.4rem 1rem", background: "#4ade80", borderRadius: "6px" }}>Get started</Link>
         </div>
@@ -55,6 +56,26 @@ export default async function HomePage() {
               border: "1px solid #222",
             }}>Sign in</Link>
           </div>
+
+          {/* Plan tier teaser */}
+          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "center", marginTop: "2.5rem" }}>
+            {[
+              { label: "Free", desc: "10 series · 5 downloads/mo", color: "#444", textColor: "#aaa" },
+              { label: "Pro", desc: "$29/mo · Unlimited · Full history", color: "#1e3a5f", textColor: "#60a5fa" },
+              { label: "API", desc: "$49/mo · REST API · 500 calls/day", color: "#0d2e1a", textColor: "#4ade80" },
+            ].map(tier => (
+              <div key={tier.label} style={{
+                background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px",
+                padding: "0.6rem 1.1rem", display: "flex", alignItems: "center", gap: "0.5rem",
+              }}>
+                <span style={{ background: tier.color, color: tier.textColor, fontSize: "0.65rem", fontWeight: 700, padding: "0.15rem 0.5rem", borderRadius: "4px", letterSpacing: "0.06em", textTransform: "uppercase" }}>{tier.label}</span>
+                <span style={{ fontSize: "0.78rem", color: "#555" }}>{tier.desc}</span>
+              </div>
+            ))}
+          </div>
+          <Link href="/pricing" style={{ display: "inline-block", marginTop: "0.75rem", fontSize: "0.8rem", color: "#4ade80", textDecoration: "none" }}>
+            Compare plans →
+          </Link>
         </section>
 
         {/* ── Feature cards ── */}

@@ -22,12 +22,20 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1">
           <NavLink href="/dashboard" label="Overview" icon="◈" exact />
+          <NavLink href="/dashboard/platform" label="Platform" icon="🌐" />
           <NavLink href="/dashboard/keys" label="API Keys" icon="🔑" />
           <NavLink href="/dashboard/usage" label="Usage" icon="📊" />
         </nav>
 
-        {/* Docs link */}
-        <div className="px-3 py-3 border-t border-border">
+        {/* Bottom links */}
+        <div className="px-3 py-3 border-t border-border space-y-1">
+          <Link
+            href="/pricing"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-bg transition-colors"
+          >
+            <span>💳</span>
+            <span>Pricing</span>
+          </Link>
           <a
             href="https://costsignal.io/docs"
             target="_blank"

@@ -1,8 +1,10 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase";
 import { getActiveKey } from "@/lib/api-keys";
 import CopyButton from "@/components/CopyButton";
+import { PLANS, type PlanId } from "@/lib/plans";
 
 async function getDashboardStats(userId: string) {
   const now = new Date();
@@ -11,7 +13,7 @@ async function getDashboardStats(userId: string) {
   // Get Supabase user
   const { data: dbUser } = await supabaseAdmin
     .from("users")
-    .select("id")
+    .select("id, plan")
     .eq("clerk_user_id", userId)
     .single();
 
@@ -56,6 +58,7 @@ async function getDashboardStats(userId: string) {
 
   return {
     dbUserId: dbUser.id,
+    plan: (dbUser.plan ?? "free") as PlanId,
     callsThisMonth: callsResult.count ?? 0,
     activeKeys: keysResult.count ?? 0,
     avgResponseMs: avgMs,
@@ -76,16 +79,53 @@ export default async function DashboardPage() {
   const stats = await getDashboardStats(userId);
   const activeKey = stats ? await getActiveKey(stats.dbUserId) : null;
 
+  const plan = stats?.plan ?? "free";
+  const planDetails = PLANS[plan];
+  const isFree = plan === "free";
+  const planBadgeStyle: Record<PlanId, { bg: string; color: string }> = {
+    free: { bg: "#2a2a2a", color: "#aaa" },
+    pro: { bg: "#1e3a5f", color: "#60a5fa" },
+    api: { bg: "#0d2e1a", color: "#4ade80" },
+  };
+  const badge = planBadgeStyle[plan];
+
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white">
-          {greeting}, {firstName} 👋
-        </h1>
-        <p className="text-gray-400 mt-1 text-sm">
-          Here&apos;s your CostSignal API activity at a glance.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-white">
+            {greeting}, {firstName} 👋
+          </h1>
+          <p className="text-gray-400 mt-1 text-sm">
+            Here&apos;s your CostSignal API activity at a glance.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <span style={{
+            background: badge.bg, color: badge.color,
+            fontSize: "0.72rem", fontWeight: 700, padding: "0.25rem 0.75rem",
+            borderRadius: "100px", letterSpacing: "0.05em", textTransform: "uppercase",
+          }}>
+            {planDetails.label}
+          </span>
+          {isFree ? (
+            <Link href="/pricing" style={{
+              fontSize: "0.8rem", fontWeight: 600, color: "#000",
+              background: "#4ade80", padding: "0.35rem 0.875rem",
+              borderRadius: "6px", textDecoration: "none",
+            }}>
+              Upgrade →
+            </Link>
+          ) : (
+            <a href="mailto:hello@costsignal.io?subject=CostSignal%20Plan%20Management" style={{
+              fontSize: "0.8rem", color: "#aaa", border: "1px solid #2a2a2a",
+              padding: "0.35rem 0.875rem", borderRadius: "6px", textDecoration: "none",
+            }}>
+              Manage plan
+            </a>
+          )}
+        </div>
       </div>
 
       {/* Stats cards */}
