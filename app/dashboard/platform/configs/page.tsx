@@ -14,11 +14,12 @@ type SavedConfig = {
   created_at: string;
 };
 
-function builderDeepLink(seriesSlugs: string[], fromYear?: number | null, toYear?: number | null) {
+function builderDeepLink(seriesSlugs: string[], fromYear?: number | null, toYear?: number | null, format?: string | null) {
   const params = new URLSearchParams();
-  if (seriesSlugs?.length) params.set("series", seriesSlugs.join(","));
-  if (fromYear) params.set("from", fromYear.toString());
-  if (toYear) params.set("to", toYear.toString());
+  if (seriesSlugs?.length) params.set("slugs", seriesSlugs.join(","));
+  if (fromYear) params.set("from", `${fromYear}-1`);
+  if (toYear) params.set("to", `${toYear}-12`);
+  if (format) params.set("format", format);
   const qs = params.toString();
   return `https://costsignal.io/builder${qs ? `?${qs}` : ""}`;
 }
@@ -135,7 +136,7 @@ export default function SavedConfigsPage() {
 
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <a
-                      href={builderDeepLink(config.series_slugs, config.from_year, config.to_year)}
+                      href={builderDeepLink(config.series_slugs, config.from_year, config.to_year, config.format)}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{

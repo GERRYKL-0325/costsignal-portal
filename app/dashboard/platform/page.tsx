@@ -15,7 +15,7 @@ async function getPlatformData(userId: string) {
 
   const plan = (dbUser.plan ?? "free") as PlanId;
 
-  const [configsResult, downloadsResult] = await Promise.all([
+  const [configsResult, downloadsResult, configCountResult] = await Promise.all([
     supabaseAdmin
       .from("saved_configs")
       .select("id, name, description, series_slugs, from_year, to_year, format, created_at")
@@ -28,21 +28,27 @@ async function getPlatformData(userId: string) {
       .eq("user_id", dbUser.id)
       .order("downloaded_at", { ascending: false })
       .limit(10),
+    supabaseAdmin
+      .from("saved_configs")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", dbUser.id),
   ]);
 
   return {
     plan,
     plan_started_at: dbUser.plan_started_at,
     configs: configsResult.data ?? [],
+    configCount: configCountResult.count ?? 0,
     downloads: downloadsResult.data ?? [],
   };
 }
 
-function builderDeepLink(seriesSlugs: string[], fromYear?: number | null, toYear?: number | null) {
+function builderDeepLink(seriesSlugs: string[], fromYear?: number | null, toYear?: number | null, format?: string | null) {
   const params = new URLSearchParams();
-  if (seriesSlugs?.length) params.set("series", seriesSlugs.join(","));
-  if (fromYear) params.set("from", fromYear.toString());
-  if (toYear) params.set("to", toYear.toString());
+  if (seriesSlugs?.length) params.set("slugs", seriesSlugs.join(","));
+  if (fromYear) params.set("from", `${fromYear}-1`);
+  if (toYear) params.set("to", `${toYear}-12`);
+  if (format) params.set("format", format);
   const qs = params.toString();
   return `https://costsignal.io/builder${qs ? `?${qs}` : ""}`;
 }
@@ -62,7 +68,7 @@ export default async function PlatformPage() {
     );
   }
 
-  const { plan, configs, downloads } = data;
+  const { plan, configs, configCount, downloads } = data;
   const planDetails = PLANS[plan];
   const isFree = plan === "free";
 
@@ -109,6 +115,22 @@ export default async function PlatformPage() {
             </a>
           )}
         </div>
+      </div>
+
+      {/* Stats bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: "Saved configs", value: configCount.toString(), sub: `of ${planDetails.savedConfigs} max` },
+          { label: "Downloads logged", value: downloads.length.toString(), sub: "recent downloads shown" },
+          { label: "Plan", value: planDetails.label, sub: plan === "free" ? "Free tier" : "Paid plan" },
+          { label: "Member since", value: data.plan_started_at ? new Date(data.plan_started_at).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "—", sub: "plan start date" },
+        ].map(stat => (
+          <div key={stat.label} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem 1.25rem" }}>
+            <p style={{ fontSize: "0.68rem", color: "#555", marginBottom: "0.3rem" }}>{stat.label}</p>
+            <p style={{ fontSize: "1.4rem", fontWeight: 700, color: "#e8e8e8", lineHeight: 1.1 }}>{stat.value}</p>
+            <p style={{ fontSize: "0.68rem", color: "#444", marginTop: "0.2rem" }}>{stat.sub}</p>
+          </div>
+        ))}
       </div>
 
       {/* Quick links */}
@@ -191,7 +213,7 @@ export default async function PlatformPage() {
                   )}
                 </div>
                 <a
-                  href={builderDeepLink(config.series_slugs, config.from_year, config.to_year)}
+                  href={builderDeepLink(config.series_slugs, config.from_year, config.to_year, config.format)}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
