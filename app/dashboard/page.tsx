@@ -164,6 +164,118 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {/* Onboarding card — show when user has no keys and no saved configs */}
+      {stats && stats.activeKeys === 0 && stats.recentConfigs.length === 0 && (
+        <div
+          style={{
+            background: "#0d1a10",
+            border: "1px solid #1a3520",
+            borderRadius: "16px",
+            padding: "2rem 2.5rem",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
+            gap: "1.5rem",
+          }}
+        >
+          <div>
+            <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff", margin: 0 }}>
+              Welcome to CostSignal 👋
+            </p>
+            <p style={{ fontSize: "0.85rem", color: "#6b7280", margin: "0.5rem 0 0" }}>
+              Get set up in three steps — takes less than a minute.
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "1rem",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              width: "100%",
+            }}
+          >
+            {[
+              {
+                step: "1",
+                title: "Generate your API key",
+                desc: "Create your key to start making authenticated requests.",
+                href: "/dashboard/keys",
+                cta: "Go to API Keys →",
+              },
+              {
+                step: "2",
+                title: "Save your first preset",
+                desc: "Use the Builder to select series and save a config.",
+                href: "https://costsignal.io/builder",
+                cta: "Open Builder →",
+                external: true,
+              },
+              {
+                step: "3",
+                title: "Start querying",
+                desc: "Hit the API with your key and get cost data in seconds.",
+                href: "https://costsignal.io/docs",
+                cta: "Read the Docs →",
+                external: true,
+              },
+            ].map(({ step, title, desc, href, cta, external }) => (
+              <div
+                key={step}
+                style={{
+                  background: "#111",
+                  border: "1px solid #1e1e1e",
+                  borderRadius: "12px",
+                  padding: "1.25rem",
+                  flex: "1 1 160px",
+                  maxWidth: "220px",
+                  textAlign: "left",
+                }}
+              >
+                <div
+                  style={{
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: "50%",
+                    background: "#0d2e1a",
+                    border: "1px solid #4ade80",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: "0.75rem",
+                    fontSize: "0.75rem",
+                    fontWeight: 700,
+                    color: "#4ade80",
+                  }}
+                >
+                  {step}
+                </div>
+                <p style={{ fontSize: "0.82rem", fontWeight: 600, color: "#fff", margin: "0 0 0.35rem" }}>
+                  {title}
+                </p>
+                <p style={{ fontSize: "0.75rem", color: "#555", margin: "0 0 0.75rem" }}>
+                  {desc}
+                </p>
+                <a
+                  href={href}
+                  {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  style={{
+                    fontSize: "0.75rem",
+                    fontWeight: 700,
+                    color: "#4ade80",
+                    textDecoration: "none",
+                  }}
+                >
+                  {cta}
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
