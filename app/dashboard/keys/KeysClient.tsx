@@ -1,7 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CopyButton from "@/components/CopyButton";
+
+function CacheRefreshLine() {
+  const [refreshText, setRefreshText] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("https://costsignal.io/v1/series", { cache: "no-store" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        // Handle both {cached_at: ...} at root and nested inside metadata/meta
+        const cachedAt: string | undefined =
+          data?.cached_at ??
+          data?.meta?.cached_at ??
+          data?.metadata?.cached_at;
+        if (!cachedAt) { setRefreshText("Data freshness unknown"); return; }
+        const diffMs = Date.now() - new Date(cachedAt).getTime();
+        const diffMin = Math.round(diffMs / 60_000);
+        if (diffMin < 1) setRefreshText("Data last refreshed: just now");
+        else if (diffMin === 1) setRefreshText("Data last refreshed: 1 minute ago");
+        else setRefreshText(`Data last refreshed: ${diffMin} minutes ago`);
+      })
+      .catch(() => setRefreshText("Data freshness unavailable"));
+  }, []);
+
+  if (!refreshText) return null;
+
+  return (
+    <p style={{ fontSize: "0.75rem", color: "#555", margin: 0 }}>
+      🕐 {refreshText}
+    </p>
+  );
+}
 
 type ActiveKey = {
   id: string;
@@ -58,6 +89,9 @@ export default function KeysClient({
         <p className="text-gray-400 text-sm mt-1">
           Manage your CostSignal API keys. Keys are hashed — the raw key is shown only once.
         </p>
+        <div className="mt-2">
+          <CacheRefreshLine />
+        </div>
       </div>
 
       {/* Newly generated key callout */}
