@@ -1,4 +1,4 @@
-import { UserButton } from "@clerk/nextjs";
+import { UserButton, SignOutButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { ReactNode } from "react";
 
@@ -45,6 +45,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             <span>↗</span>
             <span>API Docs</span>
           </a>
+          <SignOutButton redirectUrl="/">
+            <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-red-400 hover:bg-bg transition-colors">
+              <span>⎋</span>
+              <span>Sign out</span>
+            </button>
+          </SignOutButton>
         </div>
       </aside>
 
