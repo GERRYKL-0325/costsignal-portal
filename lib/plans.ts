@@ -2,17 +2,22 @@ export const PLANS = {
   free: {
     label: 'Free',
     price: 0,
-    maxSeries: 10,
+    maxSeries: 30,
     maxDownloadsPerMonth: 5,
-    historyYears: 3,        // can only go back 3 years in builder
-    savedConfigs: 3,
+    historyYears: 3,
+    savedConfigs: 1,
     apiAccess: false,
+    tagline: 'Explore the catalog. Build your first model.',
     features: [
-      '10 series per export',
-      '5 downloads/month',
-      '3-year history',
-      'Builder access',
-      'TAM Engine',
+      'Access to 30 series across all categories',
+      '3 years of monthly history',
+      '5 Excel & CSV exports/month',
+      'Builder & TAM Engine',
+      'BLS, FRED & EIA data sources',
+    ],
+    limits: [
+      'No saved presets',
+      'No API access',
     ],
   },
   pro: {
@@ -20,16 +25,19 @@ export const PLANS = {
     price: 29,
     maxSeries: 999,
     maxDownloadsPerMonth: 999,
-    historyYears: 11,       // full 2015→present
-    savedConfigs: 999,
+    historyYears: 11,
+    savedConfigs: 50,
     apiAccess: false,
+    tagline: 'Full catalog. Full history. No limits on exports.',
     features: [
-      'Unlimited series',
-      'Unlimited downloads',
-      'Full 2015→present history',
-      'Saved templates',
-      'Priority support',
+      'All 150+ series across every category',
+      'Full history back to Jan 2015',
+      'Unlimited Excel & CSV exports',
+      'Up to 50 saved presets',
+      'Priority email support',
+      'Early access to new categories',
     ],
+    limits: [],
   },
   api: {
     label: 'API',
@@ -39,13 +47,16 @@ export const PLANS = {
     historyYears: 11,
     savedConfigs: 999,
     apiAccess: true,
+    tagline: 'Pipe live data directly into your models and tools.',
     features: [
       'Everything in Pro',
-      'REST API access',
-      'API key management',
-      'Usage analytics',
-      '500 API calls/day',
+      'REST API — 1,000 calls/day',
+      'JSON endpoints for every series',
+      'API key management & usage analytics',
+      'Plug into Excel Power Query, Python, or any BI tool',
+      'Unlimited saved presets',
     ],
+    limits: [],
   },
 } as const;
 
@@ -53,7 +64,7 @@ export type PlanId = keyof typeof PLANS;
 
 export function getPlanBadgeColor(plan: PlanId): string {
   switch (plan) {
-    case 'free': return '#444';
+    case 'free': return '#333';
     case 'pro': return '#60a5fa';
     case 'api': return '#4ade80';
   }
