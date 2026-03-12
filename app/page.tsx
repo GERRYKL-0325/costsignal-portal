@@ -4,81 +4,80 @@ import Link from "next/link";
 
 export default async function HomePage() {
   const { userId } = await auth();
-
-  if (userId) {
-    redirect("/dashboard");
-  }
+  if (userId) redirect("/dashboard");
 
   return (
-    <main className="min-h-screen bg-bg flex flex-col items-center justify-center px-4">
-      {/* Logo / Brand */}
-      <div className="mb-12 text-center">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
-            <div className="w-3 h-3 rounded-full bg-accent" />
-          </div>
-          <span className="text-xl font-semibold tracking-tight text-white">
-            CostSignal
-          </span>
+    <>
+      {/* ── Nav ── */}
+      <nav style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "0 1.5rem", height: "56px",
+        background: "rgba(10,10,10,0.95)", backdropFilter: "blur(12px)",
+        borderBottom: "1px solid #1a1a1a",
+      }}>
+        <div style={{ fontWeight: 700, fontSize: "1rem", letterSpacing: "-0.02em" }}>
+          Cost<span style={{ color: "#4ade80" }}>Signal</span>
+          <span style={{ marginLeft: "0.5rem", fontSize: "0.7rem", fontWeight: 500, color: "#555", letterSpacing: "0.06em", textTransform: "uppercase" }}>Portal</span>
         </div>
-        <h1 className="text-4xl font-bold text-white mb-3">
-          Developer Portal
-        </h1>
-        <p className="text-gray-400 text-lg max-w-md">
-          Manage your API keys, monitor usage, and integrate economic data
-          series into your applications.
-        </p>
-      </div>
+        <div style={{ display: "flex", gap: "0.75rem" }}>
+          <Link href="https://costsignal.io" style={{ fontSize: "0.8rem", color: "#555", textDecoration: "none", padding: "0.35rem 0.75rem", border: "1px solid #222", borderRadius: "6px" }}>← costsignal.io</Link>
+          <Link href="/sign-in" style={{ fontSize: "0.8rem", color: "#aaa", textDecoration: "none", padding: "0.35rem 0.75rem", border: "1px solid #222", borderRadius: "6px" }}>Sign in</Link>
+          <Link href="/sign-up" style={{ fontSize: "0.85rem", color: "#000", fontWeight: 700, textDecoration: "none", padding: "0.4rem 1rem", background: "#4ade80", borderRadius: "6px" }}>Get started</Link>
+        </div>
+      </nav>
 
-      {/* CTA */}
-      <div className="flex gap-4">
-        <Link
-          href="/sign-in"
-          className="px-6 py-3 rounded-lg bg-accent text-black font-semibold hover:bg-accent-dim transition-colors"
-        >
-          Sign In
-        </Link>
-        <Link
-          href="/sign-up"
-          className="px-6 py-3 rounded-lg bg-bg2 text-white font-semibold border border-border hover:border-gray-600 transition-colors"
-        >
-          Create Account
-        </Link>
-      </div>
-
-      {/* Features */}
-      <div className="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-2xl w-full">
-        {[
-          {
-            icon: "🔑",
-            title: "API Keys",
-            desc: "Generate and rotate keys with one click.",
-          },
-          {
-            icon: "📊",
-            title: "Usage Analytics",
-            desc: "Track calls, endpoints, and response times.",
-          },
-          {
-            icon: "📈",
-            title: "Economic Data",
-            desc: "BLS, FRED, and EIA series at your fingertips.",
-          },
-        ].map((f) => (
-          <div
-            key={f.title}
-            className="bg-bg2 border border-border rounded-xl p-5"
-          >
-            <div className="text-2xl mb-3">{f.icon}</div>
-            <div className="font-semibold text-white mb-1">{f.title}</div>
-            <div className="text-sm text-gray-400">{f.desc}</div>
+      {/* ── Hero ── */}
+      <main style={{ minHeight: "100vh", background: "#0a0a0a", paddingTop: "56px", display: "flex", flexDirection: "column" }}>
+        <section style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "7rem 1.5rem 4rem", textAlign: "center" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", background: "#0d1a10", border: "1px solid #1a3a1a", borderRadius: "100px", padding: "0.3rem 0.85rem", marginBottom: "1.5rem" }}>
+            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#4ade80", display: "inline-block" }} />
+            <span style={{ fontSize: "0.72rem", color: "#4ade80", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>Now live</span>
           </div>
-        ))}
-      </div>
 
-      <footer className="mt-16 text-gray-600 text-sm">
-        © {new Date().getFullYear()} CostSignal · Economic data infrastructure
-      </footer>
-    </main>
+          <h1 style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 700, letterSpacing: "-0.03em", color: "#e8e8e8", marginBottom: "1.25rem", lineHeight: 1.1 }}>
+            Your CostSignal<br />
+            <span style={{ color: "#4ade80" }}>API dashboard</span>
+          </h1>
+
+          <p style={{ fontSize: "1.05rem", color: "#666", maxWidth: "480px", lineHeight: 1.7, marginBottom: "2.5rem" }}>
+            Manage API keys, monitor usage, and access 96+ BLS, FRED, and EIA economic series — all in one place.
+          </p>
+
+          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "center" }}>
+            <Link href="/sign-up" style={{
+              padding: "0.8rem 2rem", background: "#4ade80", color: "#000",
+              fontWeight: 700, fontSize: "0.95rem", borderRadius: "8px", textDecoration: "none",
+            }}>Create free account →</Link>
+            <Link href="/sign-in" style={{
+              padding: "0.8rem 1.5rem", background: "transparent", color: "#aaa",
+              fontWeight: 600, fontSize: "0.9rem", borderRadius: "8px", textDecoration: "none",
+              border: "1px solid #222",
+            }}>Sign in</Link>
+          </div>
+        </section>
+
+        {/* ── Feature cards ── */}
+        <section style={{ maxWidth: "900px", margin: "0 auto", padding: "0 1.5rem 6rem", width: "100%" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1rem" }}>
+            {[
+              { badge: "KEYS", title: "API key management", desc: "Generate, rotate, and revoke keys instantly. Every key is hashed at rest — never stored in plaintext." },
+              { badge: "USAGE", title: "Usage analytics", desc: "See calls by endpoint, response times, and top series. 90-day rolling history." },
+              { badge: "DATA", title: "96+ live series", desc: "BLS cost indices, FRED interest rates, EIA energy prices. Updated monthly, sourced from primary government APIs." },
+            ].map(f => (
+              <div key={f.badge} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.5rem" }}>
+                <div style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.08em", color: "#4ade80", marginBottom: "0.75rem", fontFamily: "monospace" }}>{f.badge}</div>
+                <div style={{ fontWeight: 600, color: "#e8e8e8", marginBottom: "0.5rem", fontSize: "0.95rem" }}>{f.title}</div>
+                <div style={{ fontSize: "0.82rem", color: "#555", lineHeight: 1.6 }}>{f.desc}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <footer style={{ borderTop: "1px solid #111", padding: "1.5rem", textAlign: "center", color: "#333", fontSize: "0.8rem" }}>
+          © {new Date().getFullYear()} CostSignal · <Link href="https://costsignal.io" style={{ color: "#444", textDecoration: "none" }}>costsignal.io</Link>
+        </footer>
+      </main>
+    </>
   );
 }
