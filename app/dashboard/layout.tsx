@@ -1,8 +1,13 @@
-import { UserButton, SignOutButton } from "@clerk/nextjs";
-import Link from "next/link";
+import { UserButton } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
 import { ReactNode } from "react";
+import SidebarNav, { SidebarBottom } from "@/components/SidebarNav";
+import SidebarPlanBadge from "@/components/SidebarPlanBadge";
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+export default async function DashboardLayout({ children }: { children: ReactNode }) {
+  const user = await currentUser();
+  const email = user?.emailAddresses?.[0]?.emailAddress ?? "";
+
   return (
     <div className="min-h-screen bg-bg flex">
       {/* Sidebar */}
@@ -19,39 +24,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          <NavLink href="/dashboard" label="Overview" icon="◈" exact />
-          <NavLink href="/dashboard/platform" label="Platform" icon="🌐" />
-          <NavLink href="/dashboard/keys" label="API Keys" icon="🔑" />
-          <NavLink href="/dashboard/usage" label="Usage" icon="📊" />
-        </nav>
+        {/* User info + plan badge */}
+        <SidebarPlanBadge email={email} />
+
+        {/* Nav — client component for active state */}
+        <SidebarNav />
 
         {/* Bottom links */}
-        <div className="px-3 py-3 border-t border-border space-y-1">
-          <Link
-            href="/pricing"
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-bg transition-colors"
-          >
-            <span>💳</span>
-            <span>Pricing</span>
-          </Link>
-          <a
-            href="https://costsignal.io/docs"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-bg transition-colors"
-          >
-            <span>↗</span>
-            <span>API Docs</span>
-          </a>
-          <SignOutButton redirectUrl="/">
-            <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-red-400 hover:bg-bg transition-colors">
-              <span>⎋</span>
-              <span>Sign out</span>
-            </button>
-          </SignOutButton>
-        </div>
+        <SidebarBottom />
       </aside>
 
       {/* Main content */}
@@ -71,28 +51,5 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <main className="flex-1 p-6">{children}</main>
       </div>
     </div>
-  );
-}
-
-function NavLink({
-  href,
-  label,
-  icon,
-  exact,
-}: {
-  href: string;
-  label: string;
-  icon: string;
-  exact?: boolean;
-}) {
-  // Active state handled client-side; use static styles here
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-bg transition-colors group"
-    >
-      <span className="text-base">{icon}</span>
-      <span>{label}</span>
-    </Link>
   );
 }
