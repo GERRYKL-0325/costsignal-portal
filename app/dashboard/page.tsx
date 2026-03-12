@@ -1,0 +1,219 @@
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { supabaseAdmin } from "@/lib/supabase";
+import { getActiveKey } from "@/lib/api-keys";
+import CopyButton from "@/components/CopyButton";
+
+async function getDashboardStats(userId: string) {
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+  // Get Supabase user
+  const { data: dbUser } = await supabaseAdmin
+    .from("users")
+    .select("id")
+    .eq("clerk_user_id", userId)
+    .single();
+
+  if (!dbUser) return null;
+
+  const [callsResult, keysResult, avgResult, recentResult] = await Promise.all([
+    // Calls this month
+    supabaseAdmin
+      .from("usage_logs")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", dbUser.id)
+      .gte("created_at", startOfMonth),
+    // Active keys count
+    supabaseAdmin
+      .from("api_keys")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", dbUser.id)
+      .is("revoked_at", null),
+    // Avg response time this month
+    supabaseAdmin
+      .from("usage_logs")
+      .select("response_time_ms")
+      .eq("user_id", dbUser.id)
+      .gte("created_at", startOfMonth)
+      .not("response_time_ms", "is", null),
+    // Recent 10 calls
+    supabaseAdmin
+      .from("usage_logs")
+      .select("endpoint, series_requested, created_at, status_code, response_time_ms")
+      .eq("user_id", dbUser.id)
+      .order("created_at", { ascending: false })
+      .limit(10),
+  ]);
+
+  const avgMs =
+    avgResult.data && avgResult.data.length > 0
+      ? Math.round(
+          avgResult.data.reduce((sum, r) => sum + (r.response_time_ms ?? 0), 0) /
+            avgResult.data.length
+        )
+      : null;
+
+  return {
+    dbUserId: dbUser.id,
+    callsThisMonth: callsResult.count ?? 0,
+    activeKeys: keysResult.count ?? 0,
+    avgResponseMs: avgMs,
+    recentCalls: recentResult.data ?? [],
+  };
+}
+
+export default async function DashboardPage() {
+  const { userId } = await auth();
+  if (!userId) redirect("/sign-in");
+
+  const user = await currentUser();
+  const firstName = user?.firstName ?? "there";
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
+  const stats = await getDashboardStats(userId);
+  const activeKey = stats ? await getActiveKey(stats.dbUserId) : null;
+
+  return (
+    <div className="max-w-5xl mx-auto space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-white">
+          {greeting}, {firstName} 👋
+        </h1>
+        <p className="text-gray-400 mt-1 text-sm">
+          Here&apos;s your CostSignal API activity at a glance.
+        </p>
+      </div>
+
+      {/* Stats cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <StatCard
+          label="API calls this month"
+          value={stats?.callsThisMonth.toLocaleString() ?? "—"}
+          sub={`Since ${new Date(new Date().getFullYear(), new Date().getMonth(), 1).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}`}
+        />
+        <StatCard
+          label="Active keys"
+          value={stats?.activeKeys.toString() ?? "—"}
+          sub="Non-revoked keys"
+        />
+        <StatCard
+          label="Avg response time"
+          value={
+            stats?.avgResponseMs != null ? `${stats.avgResponseMs} ms` : "—"
+          }
+          sub="This month"
+        />
+      </div>
+
+      {/* Quick key copy */}
+      {activeKey && (
+        <div className="bg-bg2 border border-border rounded-xl p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-white">Your API Key</h2>
+            <a
+              href="/dashboard/keys"
+              className="text-xs text-accent hover:underline"
+            >
+              Manage keys →
+            </a>
+          </div>
+          <div className="flex items-center gap-3">
+            <code className="flex-1 font-mono text-sm bg-bg border border-border rounded-lg px-4 py-2.5 text-gray-300">
+              {activeKey.key_prefix}••••••••••••••••••••••
+            </code>
+            <CopyButton value={`${activeKey.key_prefix}••••••••••••••••••••••`} label="Copy prefix" />
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            Full key was shown once at creation. Go to{" "}
+            <a href="/dashboard/keys" className="text-accent hover:underline">
+              API Keys
+            </a>{" "}
+            to regenerate.
+          </p>
+        </div>
+      )}
+
+      {/* Recent calls */}
+      <div className="bg-bg2 border border-border rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-border">
+          <h2 className="text-sm font-semibold text-white">Recent API Calls</h2>
+        </div>
+        {!stats || stats.recentCalls.length === 0 ? (
+          <div className="px-5 py-10 text-center text-gray-500 text-sm">
+            No calls yet. Start using your API key to see activity here.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-gray-400 text-xs">
+                  <th className="text-left px-5 py-3 font-medium">Endpoint</th>
+                  <th className="text-left px-5 py-3 font-medium">Series</th>
+                  <th className="text-left px-5 py-3 font-medium">Time</th>
+                  <th className="text-left px-5 py-3 font-medium">Status</th>
+                  <th className="text-left px-5 py-3 font-medium">Latency</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {stats.recentCalls.map((call, i) => (
+                  <tr key={i} className="hover:bg-bg/50 transition-colors">
+                    <td className="px-5 py-3 font-mono text-xs text-gray-300">
+                      {call.endpoint}
+                    </td>
+                    <td className="px-5 py-3 text-gray-400 text-xs max-w-[200px] truncate">
+                      {call.series_requested?.join(", ") ?? "—"}
+                    </td>
+                    <td className="px-5 py-3 text-gray-400 text-xs whitespace-nowrap">
+                      {new Date(call.created_at).toLocaleString()}
+                    </td>
+                    <td className="px-5 py-3">
+                      <StatusBadge code={call.status_code} />
+                    </td>
+                    <td className="px-5 py-3 text-gray-400 text-xs">
+                      {call.response_time_ms != null
+                        ? `${call.response_time_ms}ms`
+                        : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  sub,
+}: {
+  label: string;
+  value: string;
+  sub: string;
+}) {
+  return (
+    <div className="bg-bg2 border border-border rounded-xl p-5">
+      <p className="text-xs text-gray-400 mb-2">{label}</p>
+      <p className="text-2xl font-bold text-white">{value}</p>
+      <p className="text-xs text-gray-500 mt-1">{sub}</p>
+    </div>
+  );
+}
+
+function StatusBadge({ code }: { code: number | null }) {
+  if (!code) return <span className="text-gray-500 text-xs">—</span>;
+  const color =
+    code >= 200 && code < 300
+      ? "text-accent"
+      : code >= 400 && code < 500
+      ? "text-yellow-400"
+      : "text-red-400";
+  return <span className={`font-mono text-xs font-medium ${color}`}>{code}</span>;
+}
