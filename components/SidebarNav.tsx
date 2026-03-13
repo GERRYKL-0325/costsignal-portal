@@ -8,7 +8,7 @@ const NAV_LINKS = [
   { href: "/dashboard", label: "Dashboard", sub: "Overview & activity", icon: "◈", exact: true },
   { href: "/dashboard/keys", label: "API Keys", sub: "Authenticate your requests", icon: "🔑" },
   { href: "/dashboard/usage", label: "Usage", sub: "Track your API calls", icon: "📊" },
-  { href: "/dashboard/platform", label: "Platform", sub: "Saved presets", icon: "🌐" },
+  { href: "/dashboard/platform", label: "Presets", sub: "Saved configs & downloads", icon: "📂" },
 ];
 
 export default function SidebarNav() {

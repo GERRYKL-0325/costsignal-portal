@@ -84,7 +84,7 @@ export default async function PlatformPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-white">Platform</h1>
+          <h1 className="text-2xl font-bold text-white">Presets</h1>
           <p className="text-gray-400 mt-1 text-sm">
             Saved configurations, download history, and account plan.
           </p>
