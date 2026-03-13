@@ -63,7 +63,7 @@ export function SidebarBottom() {
         rel="noopener noreferrer"
         className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-bg transition-colors"
       >
-        <span>←</span>
+        <span>↗</span>
         <span>Back to Builder</span>
       </a>
       <a

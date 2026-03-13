@@ -42,7 +42,7 @@ export default async function HomePage() {
           </h1>
 
           <p style={{ fontSize: "1.05rem", color: "#666", maxWidth: "480px", lineHeight: 1.7, marginBottom: "2.5rem" }}>
-            Manage API keys, monitor usage, and access 96+ BLS, FRED, and EIA economic series — all in one place.
+            Manage API keys, monitor usage, and access 124+ BLS, FRED, and EIA economic series — all in one place.
           </p>
 
           <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "center" }}>
@@ -84,7 +84,7 @@ export default async function HomePage() {
             {[
               { badge: "KEYS", title: "API key management", desc: "Generate, rotate, and revoke keys instantly. Every key is hashed at rest — never stored in plaintext." },
               { badge: "USAGE", title: "Usage analytics", desc: "See calls by endpoint, response times, and top series. 90-day rolling history." },
-              { badge: "DATA", title: "96+ live series", desc: "BLS cost indices, FRED interest rates, EIA energy prices. Updated monthly, sourced from primary government APIs." },
+              { badge: "DATA", title: "124+ live series", desc: "BLS cost indices, FRED interest rates, EIA energy prices. Updated monthly, sourced from primary government APIs." },
             ].map(f => (
               <div key={f.badge} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.5rem" }}>
                 <div style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.08em", color: "#4ade80", marginBottom: "0.75rem", fontFamily: "monospace" }}>{f.badge}</div>

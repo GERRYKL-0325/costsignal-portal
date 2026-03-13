@@ -182,6 +182,110 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {/* Progressive nudge: has a key but never made a call */}
+      {stats && stats.activeKeys > 0 && stats.callsThisMonth === 0 && activeKey && (
+        <div
+          style={{
+            background: "linear-gradient(135deg, #0d1a2e 0%, #0a0f1a 60%, #111 100%)",
+            border: "1px solid #1a2a40",
+            borderRadius: "16px",
+            padding: "1.75rem 2rem",
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "1.5rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ flex: "1 1 300px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+              <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "#60a5fa", letterSpacing: "0.08em", fontFamily: "monospace" }}>STEP 2 OF 3</span>
+            </div>
+            <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff", margin: "0 0 0.4rem" }}>
+              API key ready. Make your first call.
+            </p>
+            <p style={{ fontSize: "0.82rem", color: "#6b7280", margin: 0, lineHeight: 1.5 }}>
+              You're set up — your key is active. Try this curl to fetch lumber and steel price data from 2020–2024:
+            </p>
+          </div>
+          <div style={{ flex: "1 1 360px" }}>
+            <div
+              style={{
+                background: "#0a0a0a",
+                border: "1px solid #1a1a1a",
+                borderRadius: "10px",
+                padding: "1rem 1.25rem",
+                fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                fontSize: "0.72rem",
+                lineHeight: 1.7,
+                color: "#94a3b8",
+                overflowX: "auto",
+                position: "relative",
+              }}
+            >
+              <pre style={{ margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-all" }}>{`curl "https://costsignal.io/v1/data?slugs=bls-ppi-lumber,eia-crude-wti&from=2020-1&to=2024-12&format=json" \\
+  -H "X-API-Key: ${activeKey.key_prefix}<YOUR_KEY>"`}</pre>
+            </div>
+            <div style={{ display: "flex", gap: "0.75rem", marginTop: "0.875rem", flexWrap: "wrap" }}>
+              <a
+                href="/dashboard/keys"
+                style={{ fontSize: "0.78rem", fontWeight: 600, color: "#60a5fa", textDecoration: "none" }}
+              >
+                Copy full key →
+              </a>
+              <a
+                href="https://costsignal.io/docs"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: "0.78rem", fontWeight: 600, color: "#555", textDecoration: "none" }}
+              >
+                API reference ↗
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Progressive nudge: has made calls but no saved presets */}
+      {stats && stats.callsThisMonth > 0 && stats.recentConfigs.length === 0 && (
+        <div
+          style={{
+            background: "#0f110d",
+            border: "1px solid #1a2a1a",
+            borderRadius: "14px",
+            padding: "1.25rem 1.5rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "1rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.3rem" }}>
+              <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "#4ade80", letterSpacing: "0.08em", fontFamily: "monospace" }}>STEP 3 OF 3</span>
+            </div>
+            <p style={{ fontSize: "0.9rem", fontWeight: 600, color: "#e8e8e8", margin: "0 0 0.25rem" }}>
+              Save your first preset in the Builder
+            </p>
+            <p style={{ fontSize: "0.78rem", color: "#555", margin: 0 }}>
+              Build a custom cost index, save it, and reload it any time from this dashboard.
+            </p>
+          </div>
+          <a
+            href="https://costsignal.io/builder"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              fontSize: "0.82rem", fontWeight: 700, color: "#000",
+              background: "#4ade80", padding: "0.5rem 1.25rem",
+              borderRadius: "7px", textDecoration: "none", whiteSpace: "nowrap",
+            }}
+          >
+            Open Builder →
+          </a>
+        </div>
+      )}
+
       {/* Onboarding hero — show when user has no keys and no saved configs */}
       {stats && stats.activeKeys === 0 && stats.recentConfigs.length === 0 && (
         <div
