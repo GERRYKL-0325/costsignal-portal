@@ -29,10 +29,13 @@ export default function SignInPage() {
           elements: {
             rootBox: { width: "100%", maxWidth: "400px" },
             card: {
-              boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
-              background: "#1a1a1a",
-              border: "1px solid #333",
+              boxShadow: "0 4px 32px rgba(0,0,0,0.6)",
+              background: "#1c1c1c",
+              border: "1px solid #3a3a3a",
+              borderRadius: "12px",
             },
+            headerTitle: { color: "#f0f0f0", fontSize: "1.1rem", fontWeight: "700" },
+            headerSubtitle: { color: "#999" },
             headerTitle: { color: "#e8e8e8" },
             headerSubtitle: { color: "#888" },
             socialButtonsBlockButton: {
