@@ -7,6 +7,7 @@ import SidebarPlanBadge from "@/components/SidebarPlanBadge";
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const user = await currentUser();
   const email = user?.emailAddresses?.[0]?.emailAddress ?? "";
+  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(" ");
 
   return (
     <div className="min-h-screen bg-bg flex">
@@ -37,14 +38,27 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       {/* Main content */}
       <div className="flex-1 ml-56 flex flex-col">
         {/* Top bar */}
-        <header className="h-14 border-b border-border bg-bg2/50 backdrop-blur-sm flex items-center justify-end px-6 sticky top-0 z-10">
-          <UserButton
-            appearance={{
-              elements: {
-                avatarBox: "w-8 h-8",
-              },
-            }}
-          />
+        <header className="h-14 border-b border-border bg-bg2/50 backdrop-blur-sm flex items-center justify-between px-6 sticky top-0 z-10">
+          {/* Left: page context or breadcrumb — leave empty for now */}
+          <div />
+          {/* Right: signed-in indicator */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            <div style={{ textAlign: "right" }}>
+              {fullName && (
+                <p style={{ fontSize: "0.78rem", fontWeight: 600, color: "#e8e8e8", margin: 0 }}>{fullName}</p>
+              )}
+              {email && (
+                <p style={{ fontSize: "0.68rem", color: "#555", margin: 0 }}>{email}</p>
+              )}
+            </div>
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: "w-8 h-8",
+                },
+              }}
+            />
+          </div>
         </header>
 
         {/* Page content */}
