@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import CopyButton from "@/components/CopyButton";
 
 function CacheRefreshLine() {
@@ -230,6 +230,9 @@ export default function KeysClient({
         )}
       </div>
 
+      {/* Quick Start */}
+      {currentKey && <QuickStart keyPrefix={currentKey.key_prefix} />}
+
       {/* Confirmation modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -259,6 +262,182 @@ export default function KeysClient({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Quick Start ────────────────────────────────────────────────────────────────
+
+const TABS = ["curl", "python", "javascript"] as const;
+type Tab = typeof TABS[number];
+
+function QuickStart({ keyPrefix }: { keyPrefix: string }) {
+  const [tab, setTab] = useState<Tab>("curl");
+  const [copied, setCopied] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const placeholder = `${keyPrefix}<YOUR_KEY>`;
+
+  const snippets: Record<Tab, string> = {
+    curl: `curl "https://costsignal.io/v1/data?slugs=bls-ppi-lumber,eia-crude-wti&from=2020-1&to=2024-12&format=json" \\
+  -H "X-API-Key: ${placeholder}"`,
+
+    python: `import requests
+
+API_KEY = "${placeholder}"
+BASE    = "https://costsignal.io/v1"
+
+resp = requests.get(
+    f"{BASE}/data",
+    params={
+        "slugs":  "bls-ppi-lumber,eia-crude-wti",
+        "from":   "2020-1",
+        "to":     "2024-12",
+        "format": "json",
+    },
+    headers={"X-API-Key": API_KEY},
+)
+data = resp.json()
+print(data)`,
+
+    javascript: `const API_KEY = "${placeholder}";
+
+const res = await fetch(
+  "https://costsignal.io/v1/data" +
+  "?slugs=bls-ppi-lumber,eia-crude-wti&from=2020-1&to=2024-12&format=json",
+  { headers: { "X-API-Key": API_KEY } }
+);
+const data = await res.json();
+console.log(data);`,
+  };
+
+  function handleCopy() {
+    navigator.clipboard.writeText(snippets[tab]).catch(() => {});
+    setCopied(true);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setCopied(false), 1800);
+  }
+
+  return (
+    <div
+      style={{
+        background: "#0d0d0d",
+        border: "1px solid #1a1a1a",
+        borderRadius: "16px",
+        overflow: "hidden",
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          padding: "1.1rem 1.25rem 0",
+          borderBottom: "1px solid #1a1a1a",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem" }}>
+          <div>
+            <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "#e8e8e8", margin: 0 }}>
+              Quick Start
+            </p>
+            <p style={{ fontSize: "0.72rem", color: "#555", margin: "0.2rem 0 0" }}>
+              Replace <code style={{ fontFamily: "monospace", fontSize: "0.7rem", background: "#1a1a1a", padding: "0.1rem 0.35rem", borderRadius: "3px", color: "#4ade80" }}>&lt;YOUR_KEY&gt;</code> with the full key you just saved
+            </p>
+          </div>
+          <a
+            href="https://costsignal.io/docs"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontSize: "0.75rem", color: "#4ade80", textDecoration: "none", fontWeight: 500, flexShrink: 0 }}
+          >
+            Full docs →
+          </a>
+        </div>
+
+        {/* Tab bar */}
+        <div style={{ display: "flex", gap: "0.125rem" }}>
+          {TABS.map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              style={{
+                background: tab === t ? "#1a1a1a" : "transparent",
+                color: tab === t ? "#e8e8e8" : "#555",
+                border: "none",
+                borderBottom: tab === t ? "2px solid #4ade80" : "2px solid transparent",
+                padding: "0.4rem 0.875rem",
+                fontSize: "0.75rem",
+                fontWeight: tab === t ? 600 : 400,
+                cursor: "pointer",
+                fontFamily: "monospace",
+                transition: "color 0.15s",
+                borderRadius: "6px 6px 0 0",
+              }}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Code block */}
+      <div style={{ position: "relative" }}>
+        <pre
+          style={{
+            margin: 0,
+            padding: "1.25rem 1.4rem",
+            fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
+            fontSize: "0.77rem",
+            lineHeight: 1.8,
+            color: "#ccc",
+            overflowX: "auto",
+            background: "transparent",
+          }}
+        >
+          {snippets[tab]}
+        </pre>
+
+        <button
+          onClick={handleCopy}
+          style={{
+            position: "absolute",
+            top: "0.75rem",
+            right: "0.75rem",
+            background: copied ? "#0d2e1a" : "#1a1a1a",
+            color: copied ? "#4ade80" : "#666",
+            border: `1px solid ${copied ? "#1a3a1a" : "#2a2a2a"}`,
+            borderRadius: "6px",
+            padding: "0.3rem 0.7rem",
+            fontSize: "0.72rem",
+            fontWeight: 600,
+            cursor: "pointer",
+            transition: "all 0.2s",
+          }}
+        >
+          {copied ? "✓ Copied" : "Copy"}
+        </button>
+      </div>
+
+      {/* Footer hint */}
+      <div
+        style={{
+          padding: "0.75rem 1.25rem",
+          borderTop: "1px solid #141414",
+          display: "flex",
+          gap: "1.5rem",
+          flexWrap: "wrap",
+        }}
+      >
+        <span style={{ fontSize: "0.72rem", color: "#444" }}>
+          📌 <strong style={{ color: "#555" }}>slugs</strong> — comma-separated series IDs from the{" "}
+          <a href="https://costsignal.io/builder" target="_blank" rel="noopener noreferrer" style={{ color: "#4ade80", textDecoration: "none" }}>Builder</a>
+        </span>
+        <span style={{ fontSize: "0.72rem", color: "#444" }}>
+          📅 <strong style={{ color: "#555" }}>from / to</strong> — YYYY-M format (e.g. 2020-1)
+        </span>
+        <span style={{ fontSize: "0.72rem", color: "#444" }}>
+          📤 <strong style={{ color: "#555" }}>format</strong> — json · csv · excel
+        </span>
+      </div>
     </div>
   );
 }
