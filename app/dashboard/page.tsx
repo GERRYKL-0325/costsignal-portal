@@ -164,34 +164,34 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Onboarding card — show when user has no keys and no saved configs */}
+      {/* Onboarding hero — show when user has no keys and no saved configs */}
       {stats && stats.activeKeys === 0 && stats.recentConfigs.length === 0 && (
         <div
           style={{
-            background: "#0d1a10",
+            background: "linear-gradient(135deg, #0d2e1a 0%, #0a1a0f 50%, #111 100%)",
             border: "1px solid #1a3520",
-            borderRadius: "16px",
-            padding: "2rem 2.5rem",
+            borderRadius: "20px",
+            padding: "3rem 3rem 2.5rem",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             textAlign: "center",
-            gap: "1.5rem",
+            gap: "2rem",
           }}
         >
           <div>
-            <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff", margin: 0 }}>
-              Welcome to CostSignal 👋
+            <p style={{ fontSize: "1.75rem", fontWeight: 800, color: "#fff", margin: 0, lineHeight: 1.2 }}>
+              Get started with CostSignal
             </p>
-            <p style={{ fontSize: "0.85rem", color: "#6b7280", margin: "0.5rem 0 0" }}>
-              Get set up in three steps — takes less than a minute.
+            <p style={{ fontSize: "1rem", color: "#4ade80", margin: "0.75rem 0 0", fontWeight: 500 }}>
+              Three steps to your first API call — takes under a minute.
             </p>
           </div>
 
           <div
             style={{
               display: "flex",
-              gap: "1rem",
+              gap: "1.25rem",
               flexWrap: "wrap",
               justifyContent: "center",
               width: "100%",
@@ -225,44 +225,44 @@ export default async function DashboardPage() {
               <div
                 key={step}
                 style={{
-                  background: "#111",
+                  background: "#0a0a0a",
                   border: "1px solid #1e1e1e",
-                  borderRadius: "12px",
-                  padding: "1.25rem",
-                  flex: "1 1 160px",
-                  maxWidth: "220px",
+                  borderRadius: "14px",
+                  padding: "1.5rem",
+                  flex: "1 1 180px",
+                  maxWidth: "260px",
                   textAlign: "left",
                 }}
               >
                 <div
                   style={{
-                    width: "28px",
-                    height: "28px",
+                    width: "32px",
+                    height: "32px",
                     borderRadius: "50%",
                     background: "#0d2e1a",
-                    border: "1px solid #4ade80",
+                    border: "2px solid #4ade80",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    marginBottom: "0.75rem",
-                    fontSize: "0.75rem",
+                    marginBottom: "1rem",
+                    fontSize: "0.8rem",
                     fontWeight: 700,
                     color: "#4ade80",
                   }}
                 >
                   {step}
                 </div>
-                <p style={{ fontSize: "0.82rem", fontWeight: 600, color: "#fff", margin: "0 0 0.35rem" }}>
+                <p style={{ fontSize: "0.9rem", fontWeight: 600, color: "#fff", margin: "0 0 0.4rem" }}>
                   {title}
                 </p>
-                <p style={{ fontSize: "0.75rem", color: "#555", margin: "0 0 0.75rem" }}>
+                <p style={{ fontSize: "0.78rem", color: "#666", margin: "0 0 1rem", lineHeight: 1.4 }}>
                   {desc}
                 </p>
                 <a
                   href={href}
                   {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                   style={{
-                    fontSize: "0.75rem",
+                    fontSize: "0.8rem",
                     fontWeight: 700,
                     color: "#4ade80",
                     textDecoration: "none",
