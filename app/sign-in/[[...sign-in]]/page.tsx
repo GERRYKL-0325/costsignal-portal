@@ -9,19 +9,18 @@ export default function SignInPage() {
           Cost<span style={{ color: "#4ade80" }}>Signal</span>
         </Link>
         <p style={{ color: "#666", fontSize: "0.85rem", marginTop: "0.35rem" }}>Sign in to your account</p>
-
       </div>
       <SignIn
         appearance={{
           variables: {
-            colorBackground: "#111111",
-            colorInputBackground: "#1a1a1a",
-            colorInputText: "#e8e8e8",
-            colorText: "#e8e8e8",
-            colorTextSecondary: "#888888",
+            colorBackground: "#1c1c1c",
+            colorInputBackground: "#252525",
+            colorInputText: "#f0f0f0",
+            colorText: "#f0f0f0",
+            colorTextSecondary: "#aaaaaa",
             colorPrimary: "#4ade80",
             colorDanger: "#f87171",
-            colorNeutral: "#333333",
+            colorNeutral: "#555555",
             borderRadius: "8px",
             fontFamily: "Inter, sans-serif",
             fontSize: "14px",
@@ -34,36 +33,30 @@ export default function SignInPage() {
               border: "1px solid #3a3a3a",
               borderRadius: "12px",
             },
-            headerTitle: { color: "#f0f0f0", fontSize: "1.1rem", fontWeight: "700" },
-            headerSubtitle: { color: "#999" },
-            headerTitle: { color: "#e8e8e8" },
-            headerSubtitle: { color: "#888" },
+            headerTitle: { color: "#f0f0f0" },
+            headerSubtitle: { color: "#aaa" },
             socialButtonsBlockButton: {
-              background: "#1a1a1a",
-              border: "1px solid #2a2a2a",
-              color: "#e8e8e8",
+              background: "#252525",
+              border: "1px solid #3a3a3a",
+              color: "#f0f0f0",
             },
-            socialButtonsBlockButton__google: { color: "#e8e8e8" },
-            dividerLine: { background: "#222" },
-            dividerText: { color: "#555" },
-            formFieldLabel: { color: "#aaa" },
+            dividerLine: { background: "#333" },
+            dividerText: { color: "#666" },
+            formFieldLabel: { color: "#bbb" },
             formFieldInput: {
-              background: "#1a1a1a",
-              border: "1px solid #2a2a2a",
-              color: "#e8e8e8",
+              background: "#252525",
+              border: "1px solid #3a3a3a",
+              color: "#f0f0f0",
             },
-            formFieldInput__focus: { borderColor: "#4ade80" },
             formButtonPrimary: {
               background: "#4ade80",
               color: "#000",
               fontWeight: "600",
             },
-            footerActionText: { color: "#666" },
+            footerActionText: { color: "#777" },
             footerActionLink: { color: "#4ade80" },
-            identityPreviewText: { color: "#e8e8e8" },
-            identityPreviewEditButtonIcon: { color: "#888" },
             badge: { display: "none" },
-            footer: { background: "#111111", borderTop: "1px solid #1a1a1a" },
+            footer: { background: "#1c1c1c", borderTop: "1px solid #2a2a2a" },
           },
         }}
       />
