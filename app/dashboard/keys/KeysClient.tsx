@@ -186,8 +186,46 @@ export default function KeysClient({
             </div>
           </div>
         ) : (
-          <div className="p-5 text-center text-gray-500 text-sm">
-            No active key found.
+          <div className="p-8 flex flex-col items-center text-center gap-4">
+            <div
+              style={{
+                width: "56px",
+                height: "56px",
+                borderRadius: "50%",
+                background: "#0d2e1a",
+                border: "2px solid #4ade80",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "1.5rem",
+              }}
+            >
+              🔑
+            </div>
+            <div>
+              <p className="text-white font-semibold text-lg">
+                Generate your first API key
+              </p>
+              <p className="text-gray-400 text-sm mt-1 max-w-sm">
+                Your API key authenticates requests to the CostSignal data API.
+              </p>
+            </div>
+            <button
+              onClick={handleRegenerate}
+              disabled={isRegenerating}
+              style={{
+                background: "#4ade80",
+                color: "#000",
+                fontWeight: 700,
+                fontSize: "0.9rem",
+                padding: "0.65rem 1.75rem",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              {isRegenerating ? "Generating…" : "Generate API Key"}
+            </button>
           </div>
         )}
       </div>
