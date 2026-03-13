@@ -130,11 +130,29 @@ export default async function DashboardPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-white">
-            {greeting}, {firstName} 👋
-          </h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-2xl font-bold text-white">
+              {greeting}, {firstName} 👋
+            </h1>
+            <a
+              href="https://costsignal.io/builder"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                fontSize: "0.8rem",
+                fontWeight: 600,
+                color: "#000",
+                background: "#4ade80",
+                padding: "0.35rem 0.875rem",
+                borderRadius: "6px",
+                textDecoration: "none",
+              }}
+            >
+              Open Builder →
+            </a>
+          </div>
           <p className="text-gray-400 mt-1 text-sm">
-            Here&apos;s your CostSignal API activity at a glance.
+            Access 124+ cost series across BLS, FRED, EIA and model-implied data.
           </p>
         </div>
         <div className="flex items-center gap-3">
