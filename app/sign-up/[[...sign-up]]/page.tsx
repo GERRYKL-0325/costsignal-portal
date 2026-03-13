@@ -19,7 +19,10 @@ export default function SignUpPage() {
           },
         }}
       />
-      <p style={{ marginTop: "1.25rem", fontSize: "0.8rem", color: "#444" }}>
+      <p style={{ marginTop: "1rem", fontSize: "0.75rem", color: "#333", textAlign: "center" }}>
+        After signing up, you'll be taken to the CostSignal Builder.
+      </p>
+      <p style={{ marginTop: "0.75rem", fontSize: "0.8rem", color: "#444" }}>
         Already have an account?{" "}
         <Link href="/sign-in" style={{ color: "#4ade80", textDecoration: "none" }}>Sign in →</Link>
       </p>

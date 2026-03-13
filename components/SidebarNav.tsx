@@ -5,10 +5,10 @@ import { usePathname } from "next/navigation";
 import { SignOutButton } from "@clerk/nextjs";
 
 const NAV_LINKS = [
-  { href: "/dashboard", label: "Dashboard", sub: "Overview & activity", icon: "◈", exact: true },
+  { href: "/dashboard", label: "Home", sub: "Launchpad", icon: "⌂", exact: true },
   { href: "/dashboard/keys", label: "API Keys", sub: "Authenticate your requests", icon: "🔑" },
   { href: "/dashboard/usage", label: "Usage", sub: "Track your API calls", icon: "📊" },
-  { href: "/dashboard/platform", label: "Presets", sub: "Saved configs & downloads", icon: "📂" },
+  { href: "/dashboard/platform", label: "Presets", sub: "Saved configs", icon: "📂" },
   { href: "/dashboard/settings", label: "Settings", sub: "Account & preferences", icon: "⚙️" },
 ];
 
@@ -65,7 +65,16 @@ export function SidebarBottom() {
         className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-bg transition-colors"
       >
         <span>↗</span>
-        <span>Back to Builder</span>
+        <span>Builder</span>
+      </a>
+      <a
+        href="https://costsignal.io/tam"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-bg transition-colors"
+      >
+        <span>↗</span>
+        <span>TAM</span>
       </a>
       <a
         href="https://costsignal.io/docs"
@@ -76,13 +85,6 @@ export function SidebarBottom() {
         <span>↗</span>
         <span>Docs</span>
       </a>
-      <Link
-        href="/pricing"
-        className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-bg transition-colors"
-      >
-        <span>💳</span>
-        <span>Pricing</span>
-      </Link>
       <SignOutButton redirectUrl="/">
         <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-red-400 hover:bg-bg transition-colors">
           <span>⎋</span>
