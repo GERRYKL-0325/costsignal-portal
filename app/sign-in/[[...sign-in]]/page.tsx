@@ -9,9 +9,7 @@ export default function SignInPage() {
           Cost<span style={{ color: "#4ade80" }}>Signal</span>
         </Link>
         <p style={{ color: "#666", fontSize: "0.85rem", marginTop: "0.35rem" }}>Sign in to your account</p>
-        <p style={{ color: "#333", fontSize: "0.7rem", marginTop: "0.2rem" }}>
-          key: {process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.slice(0,12) ?? "MISSING"}...
-        </p>
+
       </div>
       <SignIn
         appearance={{
@@ -31,9 +29,9 @@ export default function SignInPage() {
           elements: {
             rootBox: { width: "100%", maxWidth: "400px" },
             card: {
-              boxShadow: "0 0 0 1px #222",
-              background: "#111111",
-              border: "1px solid #222",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
+              background: "#1a1a1a",
+              border: "1px solid #333",
             },
             headerTitle: { color: "#e8e8e8" },
             headerSubtitle: { color: "#888" },
