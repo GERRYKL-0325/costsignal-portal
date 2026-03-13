@@ -9,6 +9,9 @@ export default function SignInPage() {
           Cost<span style={{ color: "#4ade80" }}>Signal</span>
         </Link>
         <p style={{ color: "#666", fontSize: "0.85rem", marginTop: "0.35rem" }}>Sign in to your account</p>
+        <p style={{ color: "#333", fontSize: "0.7rem", marginTop: "0.2rem" }}>
+          key: {process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.slice(0,12) ?? "MISSING"}...
+        </p>
       </div>
       <SignIn
         appearance={{
