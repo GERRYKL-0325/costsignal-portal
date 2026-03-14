@@ -429,7 +429,7 @@ console.log(data);`,
       >
         <span style={{ fontSize: "0.72rem", color: "#444" }}>
           📌 <strong style={{ color: "#555" }}>slugs</strong> — comma-separated series IDs from the{" "}
-          <a href="https://costsignal.io/builder" target="_blank" rel="noopener noreferrer" style={{ color: "#4ade80", textDecoration: "none" }}>Builder</a>
+          <a href="https://portal.costsignal.io/builder" target="_blank" rel="noopener noreferrer" style={{ color: "#4ade80", textDecoration: "none" }}>Builder</a>
         </span>
         <span style={{ fontSize: "0.72rem", color: "#444" }}>
           📅 <strong style={{ color: "#555" }}>from / to</strong> — YYYY-M format (e.g. 2020-1)

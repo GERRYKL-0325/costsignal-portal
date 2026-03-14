@@ -3,6 +3,6 @@ import { redirect } from "next/navigation";
 
 export default async function HomePage() {
   const { userId } = await auth();
-  if (userId) redirect("https://costsignal.io/builder");
+  if (userId) redirect("/builder");
   redirect("https://costsignal.io");
 }

@@ -21,7 +21,7 @@ function builderDeepLink(seriesSlugs: string[], fromYear?: number | null, toYear
   if (toYear) params.set("to", `${toYear}-12`);
   if (format) params.set("format", format);
   const qs = params.toString();
-  return `https://costsignal.io/builder${qs ? `?${qs}` : ""}`;
+  return `https://portal.costsignal.io/builder${qs ? `?${qs}` : ""}`;
 }
 
 export default function SavedConfigsPage() {
@@ -79,7 +79,7 @@ export default function SavedConfigsPage() {
           <p className="text-gray-400 font-medium text-sm">No saved configurations yet</p>
           <p className="text-gray-600 text-xs mt-1 mb-4">Save one from the Builder and it will appear here.</p>
           <a
-            href="https://costsignal.io/builder"
+            href="https://portal.costsignal.io/builder"
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -205,7 +205,7 @@ export default function SavedConfigsPage() {
       {configs.length > 0 && (
         <p className="text-xs text-gray-700 text-center">
           {configs.length} configuration{configs.length !== 1 ? "s" : ""} saved ·{" "}
-          <a href="https://costsignal.io/builder" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-accent">
+          <a href="https://portal.costsignal.io/builder" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-accent">
             Open Builder →
           </a>
         </p>

@@ -60,7 +60,7 @@ function builderDeepLink(seriesSlugs: string[], fromYear?: number | null, toYear
   if (toYear) params.set("to", `${toYear}-12`);
   if (format) params.set("format", format);
   const qs = params.toString();
-  return `https://costsignal.io/builder${qs ? `?${qs}` : ""}`;
+  return `https://portal.costsignal.io/builder${qs ? `?${qs}` : ""}`;
 }
 
 export default async function PlatformPage() {
@@ -147,7 +147,7 @@ export default async function PlatformPage() {
       {/* Quick links */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
-          { label: "Open Builder", href: "https://costsignal.io/builder", icon: "🔧", desc: "Build custom cost indices" },
+          { label: "Open Builder", href: "https://portal.costsignal.io/builder", icon: "🔧", desc: "Build custom cost indices" },
           { label: "TAM Engine", href: "https://costsignal.io/tam", icon: "📐", desc: "Market sizing calculator" },
           { label: "API Docs", href: "https://costsignal.io/docs", icon: "📖", desc: "REST API reference" },
         ].map(link => (
@@ -204,7 +204,7 @@ export default async function PlatformPage() {
         {configs.length === 0 ? (
           <div className="px-5 py-10 text-center text-gray-500 text-sm">
             <p>No saved configurations yet.</p>
-            <a href="https://costsignal.io/builder" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline text-xs mt-1 inline-block">
+            <a href="https://portal.costsignal.io/builder" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline text-xs mt-1 inline-block">
               Save one from the Builder →
             </a>
           </div>
