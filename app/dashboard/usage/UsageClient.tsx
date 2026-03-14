@@ -13,6 +13,16 @@ type UsageLog = {
   key_prefix: string;
 };
 
+function computeStats(logs: UsageLog[]) {
+  const total = logs.length;
+  const successful = logs.filter((l) => l.status_code != null && l.status_code >= 200 && l.status_code < 300).length;
+  const successRate = total > 0 ? Math.round((successful / total) * 100) : null;
+  const latencies = logs.map((l) => l.response_time_ms).filter((l): l is number => l != null);
+  const avgLatency = latencies.length > 0 ? Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length) : null;
+  const uniqueSeries = new Set(logs.flatMap((l) => l.series_requested ?? [])).size;
+  return { total, successRate, avgLatency, uniqueSeries };
+}
+
 export default function UsageClient({
   logs,
   fromDate,
@@ -25,6 +35,7 @@ export default function UsageClient({
   const router = useRouter();
   const [from, setFrom] = useState(fromDate);
   const [to, setTo] = useState(toDate);
+  const stats = computeStats(logs);
 
   function handleFilter(e: React.FormEvent) {
     e.preventDefault();
@@ -74,6 +85,46 @@ export default function UsageClient({
           ↓ Export CSV
         </button>
       </div>
+
+      {/* Stats summary */}
+      {logs.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            {
+              label: "Total Calls",
+              value: stats.total.toLocaleString(),
+              color: "#fff",
+            },
+            {
+              label: "Success Rate",
+              value: stats.successRate != null ? `${stats.successRate}%` : "—",
+              color: stats.successRate != null && stats.successRate >= 99 ? "#4ade80" : stats.successRate != null && stats.successRate >= 95 ? "#facc15" : "#f87171",
+            },
+            {
+              label: "Avg Latency",
+              value: stats.avgLatency != null ? `${stats.avgLatency}ms` : "—",
+              color: stats.avgLatency != null && stats.avgLatency < 200 ? "#4ade80" : stats.avgLatency != null && stats.avgLatency < 500 ? "#facc15" : "#f87171",
+            },
+            {
+              label: "Unique Series",
+              value: stats.uniqueSeries > 0 ? stats.uniqueSeries.toLocaleString() : "—",
+              color: "#fff",
+            },
+          ].map(({ label, value, color }) => (
+            <div
+              key={label}
+              className="bg-bg2 border border-border rounded-xl p-4"
+            >
+              <div className="text-xs text-gray-500 mb-1.5 font-medium tracking-wide uppercase">
+                {label}
+              </div>
+              <div className="text-xl font-bold" style={{ color }}>
+                {value}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Date range filter */}
       <form
