@@ -4,12 +4,22 @@ import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase";
 import { PLANS, type PlanId } from "@/lib/plans";
 
-async function getPlatformData(userId: string) {
-  const { data: dbUser } = await supabaseAdmin
+async function getPlatformData(userId: string, userEmail?: string) {
+  let { data: dbUser } = await supabaseAdmin
     .from("users")
     .select("id, plan, plan_started_at")
     .eq("clerk_user_id", userId)
     .single();
+
+  // Auto-provision: create user record if missing (e.g. webhook missed on signup)
+  if (!dbUser) {
+    const { data: newUser } = await supabaseAdmin
+      .from("users")
+      .insert({ clerk_user_id: userId, plan: "free", email: userEmail ?? null })
+      .select("id, plan, plan_started_at")
+      .single();
+    dbUser = newUser;
+  }
 
   if (!dbUser) return null;
 
@@ -58,7 +68,8 @@ export default async function PlatformPage() {
   if (!userId) redirect("/sign-in");
 
   const user = await currentUser();
-  const data = await getPlatformData(userId);
+  const userEmail = user?.emailAddresses?.[0]?.emailAddress;
+  const data = await getPlatformData(userId, userEmail);
 
   if (!data) {
     return (
