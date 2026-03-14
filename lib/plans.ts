@@ -6,6 +6,7 @@ export const PLANS = {
     maxDownloadsPerMonth: 5,
     historyYears: 3,
     savedConfigs: 1,
+    apiCallsPerMonth: 100,
     apiAccess: false,
     tagline: 'Explore the catalog. Build your first model.',
     features: [
@@ -27,6 +28,7 @@ export const PLANS = {
     maxDownloadsPerMonth: 999,
     historyYears: 11,
     savedConfigs: 50,
+    apiCallsPerMonth: 10_000,
     apiAccess: false,
     tagline: 'Full catalog. Full history. No limits on exports.',
     features: [
@@ -46,6 +48,7 @@ export const PLANS = {
     maxDownloadsPerMonth: 999,
     historyYears: 11,
     savedConfigs: 999,
+    apiCallsPerMonth: 30_000,
     apiAccess: true,
     tagline: 'Pipe live data directly into your models and tools.',
     features: [
