@@ -4,11 +4,34 @@ import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase";
 import { getActiveKey } from "@/lib/api-keys";
 import CopyButton from "@/components/CopyButton";
+import { WeeklyUsageChart, RecentPresets } from "@/components/DashboardCharts";
 import { PLANS, type PlanId } from "@/lib/plans";
+
+type SavedConfig = {
+  id: string;
+  name: string;
+  series_slugs: string[];
+  from_year: number | null;
+  to_year: number | null;
+  format: string | null;
+  description: string | null;
+};
 
 async function getDashboardStats(userId: string) {
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+  // Build last-7-days date boundaries (local day in UTC for simplicity)
+  const days7: { date: string; start: string; end: string }[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const start = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString();
+    const end = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).toISOString();
+    const label = d.toLocaleDateString("en-US", { weekday: "short", day: "numeric" });
+    days7.push({ date: label, start, end });
+  }
+  const sevenDaysAgo = days7[0].start;
 
   const { data: dbUser } = await supabaseAdmin
     .from("users")
@@ -18,23 +41,45 @@ async function getDashboardStats(userId: string) {
 
   if (!dbUser) return null;
 
-  const [callsResult, configsResult, recentResult] = await Promise.all([
-    supabaseAdmin
-      .from("usage_logs")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", dbUser.id)
-      .gte("created_at", startOfMonth),
-    supabaseAdmin
-      .from("saved_configs")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", dbUser.id),
-    supabaseAdmin
-      .from("usage_logs")
-      .select("endpoint, series_requested, created_at, status_code, response_time_ms")
-      .eq("user_id", dbUser.id)
-      .order("created_at", { ascending: false })
-      .limit(5),
-  ]);
+  const [callsResult, configsResult, recentResult, last7DaysLogs, recentPresetsResult] =
+    await Promise.all([
+      supabaseAdmin
+        .from("usage_logs")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", dbUser.id)
+        .gte("created_at", startOfMonth),
+      supabaseAdmin
+        .from("saved_configs")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", dbUser.id),
+      supabaseAdmin
+        .from("usage_logs")
+        .select("endpoint, series_requested, created_at, status_code, response_time_ms")
+        .eq("user_id", dbUser.id)
+        .order("created_at", { ascending: false })
+        .limit(5),
+      supabaseAdmin
+        .from("usage_logs")
+        .select("created_at")
+        .eq("user_id", dbUser.id)
+        .gte("created_at", sevenDaysAgo)
+        .order("created_at", { ascending: true }),
+      supabaseAdmin
+        .from("saved_configs")
+        .select("id, name, description, series_slugs, from_year, to_year, format")
+        .eq("user_id", dbUser.id)
+        .order("created_at", { ascending: false })
+        .limit(3),
+    ]);
+
+  // Bucket last-7-days logs into daily counts
+  const logsForChart = last7DaysLogs.data ?? [];
+  const dayCounts = days7.map(({ date, start, end }) => ({
+    date,
+    count: logsForChart.filter(
+      (l) => l.created_at >= start && l.created_at < end
+    ).length,
+  }));
 
   return {
     dbUserId: dbUser.id,
@@ -42,6 +87,8 @@ async function getDashboardStats(userId: string) {
     callsThisMonth: callsResult.count ?? 0,
     savedPresets: configsResult.count ?? 0,
     recentCalls: recentResult.data ?? [],
+    dayCounts,
+    recentPresets: (recentPresetsResult.data ?? []) as SavedConfig[],
   };
 }
 
@@ -239,6 +286,50 @@ export default async function DashboardPage() {
           <Link href="/dashboard/keys" style={{ fontSize: "0.78rem", color: "#4ade80", textDecoration: "none", fontWeight: 600 }}>
             Manage keys →
           </Link>
+        </div>
+      )}
+
+      {/* ── Activity row: weekly chart + recent presets ── */}
+      {stats && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <WeeklyUsageChart days={stats.dayCounts} />
+          {stats.recentPresets.length > 0 ? (
+            <RecentPresets configs={stats.recentPresets} />
+          ) : (
+            /* Placeholder card when no presets saved yet */
+            <div style={{
+              background: "#111",
+              border: "1px solid #1e1e1e",
+              borderRadius: "12px",
+              overflow: "hidden",
+            }}>
+              <div style={{
+                padding: "1rem 1.25rem 0.75rem",
+                borderBottom: "1px solid #1a1a1a",
+              }}>
+                <h2 style={{ fontSize: "0.85rem", fontWeight: 600, color: "#fff", margin: 0 }}>
+                  Recent presets
+                </h2>
+              </div>
+              <div style={{
+                padding: "2rem 1.25rem",
+                textAlign: "center",
+                color: "#333",
+                fontSize: "0.8rem",
+                lineHeight: 1.6,
+              }}>
+                No presets yet.{" "}
+                <a
+                  href="https://costsignal.io/builder"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "#4ade80", textDecoration: "none" }}
+                >
+                  Save one from the Builder →
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
