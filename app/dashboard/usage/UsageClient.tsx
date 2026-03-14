@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 type UsageLog = {
   id: number;
@@ -23,6 +23,59 @@ function computeStats(logs: UsageLog[]) {
   return { total, successRate, avgLatency, uniqueSeries };
 }
 
+function buildCurlSnippet(log: UsageLog): string {
+  const base = "https://costsignal.io";
+  const slugs = (log.series_requested ?? []).join(",");
+  const qs = slugs ? `?slugs=${encodeURIComponent(slugs)}` : "";
+  return `curl "${base}${log.endpoint}${qs}" \\\n  -H "X-API-Key: ${log.key_prefix}<YOUR_KEY>"`;
+}
+
+function CurlCopyButton({ log }: { log: UsageLog }) {
+  const [copied, setCopied] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function handleCopy() {
+    navigator.clipboard.writeText(buildCurlSnippet(log)).catch(() => {});
+    setCopied(true);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setCopied(false), 1600);
+  }
+
+  return (
+    <button
+      onClick={handleCopy}
+      title="Copy as curl"
+      style={{
+        background: copied ? "#0d2e1a" : "transparent",
+        color: copied ? "#4ade80" : "#444",
+        border: `1px solid ${copied ? "#1a3a1a" : "#222"}`,
+        borderRadius: "5px",
+        padding: "0.2rem 0.5rem",
+        fontSize: "0.65rem",
+        fontFamily: "monospace",
+        fontWeight: 600,
+        cursor: "pointer",
+        transition: "all 0.18s",
+        whiteSpace: "nowrap",
+      }}
+      onMouseEnter={(e) => {
+        if (!copied) {
+          (e.currentTarget as HTMLButtonElement).style.color = "#aaa";
+          (e.currentTarget as HTMLButtonElement).style.borderColor = "#333";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!copied) {
+          (e.currentTarget as HTMLButtonElement).style.color = "#444";
+          (e.currentTarget as HTMLButtonElement).style.borderColor = "#222";
+        }
+      }}
+    >
+      {copied ? "✓ copied" : "curl ↗"}
+    </button>
+  );
+}
+
 export default function UsageClient({
   logs,
   fromDate,
@@ -35,7 +88,22 @@ export default function UsageClient({
   const router = useRouter();
   const [from, setFrom] = useState(fromDate);
   const [to, setTo] = useState(toDate);
-  const stats = computeStats(logs);
+  const [endpointFilter, setEndpointFilter] = useState<string | null>(null);
+
+  // Derive unique endpoints sorted by frequency
+  const endpointCounts = logs.reduce<Record<string, number>>((acc, l) => {
+    if (l.endpoint) acc[l.endpoint] = (acc[l.endpoint] ?? 0) + 1;
+    return acc;
+  }, {});
+  const uniqueEndpoints = Object.entries(endpointCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([ep]) => ep);
+
+  const filteredLogs = endpointFilter
+    ? logs.filter((l) => l.endpoint === endpointFilter)
+    : logs;
+
+  const stats = computeStats(filteredLogs);
 
   function handleFilter(e: React.FormEvent) {
     e.preventDefault();
@@ -44,7 +112,7 @@ export default function UsageClient({
 
   function handleExportCsv() {
     const headers = ["Timestamp", "Endpoint", "Series", "Status", "Response Time (ms)", "Key Prefix"];
-    const rows = logs.map((l) => [
+    const rows = filteredLogs.map((l) => [
       l.created_at,
       l.endpoint,
       (l.series_requested ?? []).join(";"),
@@ -74,12 +142,12 @@ export default function UsageClient({
         <div>
           <h1 className="text-2xl font-bold text-white">Usage Logs</h1>
           <p className="text-gray-400 text-sm mt-1">
-            {logs.length} request{logs.length !== 1 ? "s" : ""} in selected range
+            {filteredLogs.length}{filteredLogs.length !== logs.length ? ` of ${logs.length}` : ""} request{filteredLogs.length !== 1 ? "s" : ""} in selected range
           </p>
         </div>
         <button
           onClick={handleExportCsv}
-          disabled={logs.length === 0}
+          disabled={filteredLogs.length === 0}
           className="px-4 py-2 text-sm font-medium rounded-lg bg-bg2 border border-border text-gray-300 hover:text-white hover:border-gray-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           ↓ Export CSV
@@ -157,11 +225,55 @@ export default function UsageClient({
         </button>
       </form>
 
+      {/* Endpoint filter pills */}
+      {uniqueEndpoints.length > 1 && (
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+          <span style={{ fontSize: "0.72rem", color: "#555", marginRight: "0.25rem" }}>Filter:</span>
+          <button
+            onClick={() => setEndpointFilter(null)}
+            style={{
+              padding: "0.25rem 0.75rem",
+              borderRadius: "100px",
+              fontSize: "0.72rem",
+              fontWeight: endpointFilter === null ? 700 : 400,
+              fontFamily: "monospace",
+              cursor: "pointer",
+              border: `1px solid ${endpointFilter === null ? "#4ade80" : "#222"}`,
+              background: endpointFilter === null ? "#0d2e1a" : "transparent",
+              color: endpointFilter === null ? "#4ade80" : "#555",
+              transition: "all 0.15s",
+            }}
+          >
+            All ({logs.length})
+          </button>
+          {uniqueEndpoints.map((ep) => (
+            <button
+              key={ep}
+              onClick={() => setEndpointFilter(endpointFilter === ep ? null : ep)}
+              style={{
+                padding: "0.25rem 0.75rem",
+                borderRadius: "100px",
+                fontSize: "0.72rem",
+                fontWeight: endpointFilter === ep ? 700 : 400,
+                fontFamily: "monospace",
+                cursor: "pointer",
+                border: `1px solid ${endpointFilter === ep ? "#4ade80" : "#222"}`,
+                background: endpointFilter === ep ? "#0d2e1a" : "transparent",
+                color: endpointFilter === ep ? "#4ade80" : "#555",
+                transition: "all 0.15s",
+              }}
+            >
+              {ep} ({endpointCounts[ep]})
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Logs table */}
       <div className="bg-bg2 border border-border rounded-xl overflow-hidden">
-        {logs.length === 0 ? (
+        {filteredLogs.length === 0 ? (
           <div className="px-5 py-14 text-center text-gray-500 text-sm">
-            No API calls in this date range.
+            {logs.length === 0 ? "No API calls in this date range." : "No calls match the selected endpoint filter."}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -173,10 +285,11 @@ export default function UsageClient({
                   <th className="text-left px-5 py-3 font-medium">Series</th>
                   <th className="text-left px-5 py-3 font-medium">Status</th>
                   <th className="text-left px-5 py-3 font-medium">Latency</th>
+                  <th className="text-left px-5 py-3 font-medium"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {logs.map((log) => (
+                {filteredLogs.map((log) => (
                   <tr key={log.id} className="hover:bg-bg/50 transition-colors">
                     <td className="px-5 py-3 text-gray-400 text-xs whitespace-nowrap">
                       {new Date(log.created_at).toLocaleString()}
@@ -209,6 +322,9 @@ export default function UsageClient({
                       {log.response_time_ms != null
                         ? `${log.response_time_ms}ms`
                         : "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <CurlCopyButton log={log} />
                     </td>
                   </tr>
                 ))}
