@@ -169,9 +169,7 @@ export default async function DashboardPage() {
       {/* ── Launch section — two big CTA cards ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <a
-          href="https://costsignal.io/builder"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/builder"
           style={{
             display: "block",
             background: "#111",
@@ -372,9 +370,7 @@ export default async function DashboardPage() {
               }}>
                 No presets yet.{" "}
                 <a
-                  href="https://costsignal.io/builder"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="/builder"
                   style={{ color: "#4ade80", textDecoration: "none" }}
                 >
                   Save one from the Builder →
