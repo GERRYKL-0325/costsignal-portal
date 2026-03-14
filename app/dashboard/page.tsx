@@ -41,7 +41,7 @@ async function getDashboardStats(userId: string) {
 
   if (!dbUser) return null;
 
-  const [callsResult, configsResult, recentResult, last7DaysLogs, recentPresetsResult] =
+  const [callsResult, configsResult, recentResult, last7DaysLogs, recentPresetsResult, monthSeriesLogs] =
     await Promise.all([
       supabaseAdmin
         .from("usage_logs")
@@ -70,6 +70,12 @@ async function getDashboardStats(userId: string) {
         .eq("user_id", dbUser.id)
         .order("created_at", { ascending: false })
         .limit(3),
+      supabaseAdmin
+        .from("usage_logs")
+        .select("series_requested")
+        .eq("user_id", dbUser.id)
+        .gte("created_at", startOfMonth)
+        .not("series_requested", "is", null),
     ]);
 
   // Bucket last-7-days logs into daily counts
@@ -81,6 +87,18 @@ async function getDashboardStats(userId: string) {
     ).length,
   }));
 
+  // Tally top series this month
+  const seriesCount: Record<string, number> = {};
+  for (const row of (monthSeriesLogs.data ?? [])) {
+    for (const slug of (row.series_requested ?? [])) {
+      seriesCount[slug] = (seriesCount[slug] ?? 0) + 1;
+    }
+  }
+  const topSeries = Object.entries(seriesCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([slug, count]) => ({ slug, count }));
+
   return {
     dbUserId: dbUser.id,
     plan: (dbUser.plan ?? "free") as PlanId,
@@ -89,6 +107,7 @@ async function getDashboardStats(userId: string) {
     recentCalls: recentResult.data ?? [],
     dayCounts,
     recentPresets: (recentPresetsResult.data ?? []) as SavedConfig[],
+    topSeries,
   };
 }
 
@@ -363,6 +382,56 @@ export default async function DashboardPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Top series this month ── */}
+      {stats && stats.topSeries.length > 0 && (
+        <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", overflow: "hidden" }}>
+          <div style={{
+            padding: "1rem 1.25rem 0.75rem",
+            borderBottom: "1px solid #1a1a1a",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}>
+            <h2 style={{ fontSize: "0.85rem", fontWeight: 600, color: "#fff", margin: 0 }}>
+              Top series this month
+            </h2>
+            <span style={{ fontSize: "0.7rem", color: "#444" }}>
+              by API call frequency
+            </span>
+          </div>
+          <div style={{ padding: "0.75rem 1.25rem 1rem" }}>
+            {(() => {
+              const max = stats.topSeries[0]?.count ?? 1;
+              return stats.topSeries.map(({ slug, count }, i) => {
+                const pct = Math.round((count / max) * 100);
+                const rank = i + 1;
+                return (
+                  <div key={slug} style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: i < stats.topSeries.length - 1 ? "0.6rem" : 0 }}>
+                    <span style={{ fontSize: "0.65rem", color: "#333", width: "1rem", textAlign: "right", flexShrink: 0 }}>
+                      {rank}
+                    </span>
+                    <code style={{ fontSize: "0.72rem", color: "#aaa", fontFamily: "monospace", width: "13rem", flexShrink: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {slug}
+                    </code>
+                    <div style={{ flex: 1, height: "4px", background: "#1a1a1a", borderRadius: "100px", overflow: "hidden" }}>
+                      <div style={{
+                        height: "100%",
+                        width: `${pct}%`,
+                        background: rank === 1 ? "#4ade80" : "#2a4a3a",
+                        borderRadius: "100px",
+                      }} />
+                    </div>
+                    <span style={{ fontSize: "0.7rem", color: "#555", width: "2.5rem", textAlign: "right", flexShrink: 0 }}>
+                      {count}×
+                    </span>
+                  </div>
+                );
+              });
+            })()}
+          </div>
         </div>
       )}
 
