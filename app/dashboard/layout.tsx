@@ -1,4 +1,3 @@
-import { UserButton } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
 import { ReactNode } from "react";
 import SidebarNav, { SidebarBottom } from "@/components/SidebarNav";
@@ -41,23 +40,39 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         <header className="h-14 border-b border-border bg-bg2/50 backdrop-blur-sm flex items-center justify-between px-6 sticky top-0 z-10">
           {/* Left: page context or breadcrumb — leave empty for now */}
           <div />
-          {/* Right: signed-in indicator */}
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <div style={{ textAlign: "right" }}>
-              {fullName && (
-                <p style={{ fontSize: "0.78rem", fontWeight: 600, color: "#e8e8e8", margin: 0 }}>{fullName}</p>
-              )}
-              {email && (
-                <p style={{ fontSize: "0.68rem", color: "#555", margin: 0 }}>{email}</p>
-              )}
-            </div>
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: "w-8 h-8",
-                },
-              }}
-            />
+          {/* Right: user initials avatar */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+            {email && (
+              <p style={{ fontSize: "0.7rem", color: "#555", margin: 0 }}>{email}</p>
+            )}
+            {(() => {
+              const initials = (
+                (user?.firstName?.[0] ?? "") + (user?.lastName?.[0] ?? "")
+              ).toUpperCase() || email?.[0]?.toUpperCase() || "?";
+              return (
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    background: "#0d1a10",
+                    border: "2px solid #4ade80",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "0.7rem",
+                    fontWeight: 700,
+                    color: "#4ade80",
+                    letterSpacing: "0.04em",
+                    flexShrink: 0,
+                    fontFamily: "Inter, sans-serif",
+                  }}
+                  title={fullName || email}
+                >
+                  {initials}
+                </div>
+              );
+            })()}
           </div>
         </header>
 
