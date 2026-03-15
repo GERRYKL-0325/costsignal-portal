@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
+import { WeeklyUsageChart } from "@/components/DashboardCharts";
 
 type UsageLog = {
   id: number;
@@ -76,14 +77,20 @@ function CurlCopyButton({ log }: { log: UsageLog }) {
   );
 }
 
+type DayCount = { date: string; count: number };
+
 export default function UsageClient({
   logs,
   fromDate,
   toDate,
+  dayCounts,
+  callsThisMonth,
 }: {
   logs: UsageLog[];
   fromDate: string;
   toDate: string;
+  dayCounts: DayCount[];
+  callsThisMonth: number;
 }) {
   const router = useRouter();
   const [from, setFrom] = useState(fromDate);
@@ -145,14 +152,37 @@ export default function UsageClient({
             {filteredLogs.length}{filteredLogs.length !== logs.length ? ` of ${logs.length}` : ""} request{filteredLogs.length !== 1 ? "s" : ""} in selected range
           </p>
         </div>
-        <button
-          onClick={handleExportCsv}
-          disabled={filteredLogs.length === 0}
-          className="px-4 py-2 text-sm font-medium rounded-lg bg-bg2 border border-border text-gray-300 hover:text-white hover:border-gray-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          ↓ Export CSV
-        </button>
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Monthly calls badge */}
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            background: "#111",
+            border: "1px solid #1e1e1e",
+            borderRadius: "10px",
+            padding: "0.45rem 0.875rem",
+          }}>
+            <span style={{ fontSize: "0.68rem", color: "#555", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              This month
+            </span>
+            <span style={{ fontSize: "0.95rem", fontWeight: 700, color: "#4ade80" }}>
+              {callsThisMonth.toLocaleString()}
+            </span>
+            <span style={{ fontSize: "0.68rem", color: "#444" }}>calls</span>
+          </div>
+          <button
+            onClick={handleExportCsv}
+            disabled={filteredLogs.length === 0}
+            className="px-4 py-2 text-sm font-medium rounded-lg bg-bg2 border border-border text-gray-300 hover:text-white hover:border-gray-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            ↓ Export CSV
+          </button>
+        </div>
       </div>
+
+      {/* 7-day activity chart */}
+      <WeeklyUsageChart days={dayCounts} />
 
       {/* Stats summary */}
       {logs.length > 0 && (
