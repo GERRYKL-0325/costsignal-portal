@@ -33,7 +33,7 @@ function builderDeepLink(
   if (toYear) params.set("to", `${toYear}-12`);
   if (format) params.set("format", format);
   const qs = params.toString();
-  return `https://costsignal.io/builder${qs ? `?${qs}` : ""}`;
+  return `https://portal.costsignal.io/builder${qs ? `?${qs}` : ""}`;
 }
 
 export function WeeklyUsageChart({ days }: { days: DayCount[] }) {
