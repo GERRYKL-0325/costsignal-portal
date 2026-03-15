@@ -13,14 +13,37 @@ export async function GET() {
   const userEmail = user?.emailAddresses[0]?.emailAddress || '';
   const userImage = user?.imageUrl || '';
 
-  // Fetch builder HTML from costsignal.io
-  const res = await fetch('https://costsignal.io/builder', {
-    cache: 'no-store',
-    headers: { 'User-Agent': 'CostSignal-Portal/1.0' },
-  });
+  // Fetch builder HTML from costsignal.io (10s timeout)
+  let res: Response;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    res = await fetch('https://costsignal.io/builder', {
+      cache: 'no-store',
+      headers: { 'User-Agent': 'CostSignal-Portal/1.0' },
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+  } catch {
+    return new NextResponse(`<!DOCTYPE html><html><head><title>Builder loading…</title>
+<meta http-equiv="refresh" content="5;url=/builder">
+<style>body{background:#0a0a0a;color:#888;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:1rem;}
+a{color:#4ade80;}</style></head><body>
+<div style="font-size:1.2rem;color:#4ade80;">⏳</div>
+<div>Builder is warming up…</div>
+<div style="font-size:0.8rem;">Refreshing in 5 seconds — or <a href="/builder">click here</a></div>
+</body></html>`, { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+  }
 
   if (!res.ok) {
-    return new NextResponse('Builder unavailable', { status: 502 });
+    return new NextResponse(`<!DOCTYPE html><html><head><title>Builder unavailable</title>
+<meta http-equiv="refresh" content="10;url=/builder">
+<style>body{background:#0a0a0a;color:#888;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:1rem;}
+a{color:#4ade80;}</style></head><body>
+<div style="font-size:1.2rem;">⚠️</div>
+<div>Builder is temporarily unavailable (${res.status})</div>
+<div style="font-size:0.8rem;"><a href="/builder">Retry</a> · or go to <a href="https://costsignal.io/builder" target="_blank">costsignal.io/builder</a> directly</div>
+</body></html>`, { status: 502, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
   }
 
   let html = await res.text();
