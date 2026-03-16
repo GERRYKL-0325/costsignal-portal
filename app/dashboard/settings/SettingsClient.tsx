@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { SignOutButton, useClerk } from "@clerk/nextjs";
 
@@ -50,6 +50,16 @@ export default function SettingsClient({
     .join("")
     .toUpperCase()
     .slice(0, 2);
+
+  const [quotaAlertPct, setQuotaAlertPct] = useState(80);
+  useEffect(() => {
+    const stored = localStorage.getItem("cs_quota_alert_pct");
+    if (stored) setQuotaAlertPct(Number(stored));
+  }, []);
+  function handleQuotaChange(val: number) {
+    setQuotaAlertPct(val);
+    localStorage.setItem("cs_quota_alert_pct", String(val));
+  }
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmInput, setDeleteConfirmInput] = useState("");
@@ -200,6 +210,41 @@ export default function SettingsClient({
         >
           Manage keys →
         </Link>
+      </div>
+
+      {/* API Quota Alert */}
+      <div className="bg-bg2 border border-border rounded-xl p-5" style={{ marginBottom: "1rem" }}>
+        <SectionHeader>API Quota Alert</SectionHeader>
+        <p style={{ fontSize: "0.82rem", fontWeight: 600, color: "#ccc", margin: "0 0 0.25rem 0" }}>
+          Quota warning threshold
+        </p>
+        <p style={{ fontSize: "0.72rem", color: "#555", margin: "0 0 1rem 0" }}>
+          We&apos;ll highlight your usage counter when you approach this limit.
+        </p>
+        <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+          {[60, 70, 80, 90].map((val) => {
+            const active = quotaAlertPct === val;
+            return (
+              <button
+                key={val}
+                onClick={() => handleQuotaChange(val)}
+                style={{
+                  background: active ? "#1a2e1a" : "#111",
+                  color: active ? "#4ade80" : "#555",
+                  border: `1px solid ${active ? "#2a4a2a" : "#1e1e1e"}`,
+                  borderRadius: "100px",
+                  padding: "0.25rem 0.65rem",
+                  fontSize: "0.72rem",
+                  fontWeight: active ? 700 : 400,
+                  cursor: "pointer",
+                  transition: "all 0.15s",
+                }}
+              >
+                {val}%
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Danger zone */}
