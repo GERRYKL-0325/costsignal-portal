@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { PresetSparkline } from "@/components/PresetSparkline";
 import { SourceBadges } from "@/components/SourceBadges";
@@ -162,6 +162,58 @@ function RenameRow({
         <p style={{ fontSize: "0.72rem", color: "#f87171", margin: 0 }}>{error}</p>
       )}
     </div>
+  );
+}
+
+function ConfigCurlCopyButton({ config }: { config: SavedConfig }) {
+  const [copied, setCopied] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleCopy = useCallback(() => {
+    const slugs = config.series_slugs.join(",");
+    const fromYear = config.from_year ?? 2020;
+    const toYear = config.to_year ?? 2024;
+    const format = config.format || "json";
+    const curl = `curl "https://costsignal.io/v1/data?slugs=${slugs}&from=${fromYear}-1&to=${toYear}-12&format=${format}" \\\n  -H "X-API-Key: YOUR_API_KEY"`;
+    navigator.clipboard.writeText(curl).catch(() => {});
+    setCopied(true);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setCopied(false), 1500);
+  }, [config]);
+
+  return (
+    <button
+      onClick={handleCopy}
+      title="Copy as curl"
+      style={{
+        background: copied ? "#0d2e1a" : "transparent",
+        color: copied ? "#4ade80" : "#555",
+        border: `1px solid ${copied ? "#2a4a2a" : "#222"}`,
+        borderRadius: "5px",
+        padding: "0.2rem 0.55rem",
+        fontSize: "0.7rem",
+        fontFamily: "monospace",
+        fontWeight: 600,
+        cursor: "pointer",
+        transition: "all 0.18s",
+        whiteSpace: "nowrap",
+        lineHeight: 1,
+      }}
+      onMouseEnter={(e) => {
+        if (!copied) {
+          (e.currentTarget as HTMLButtonElement).style.color = "#4ade80";
+          (e.currentTarget as HTMLButtonElement).style.borderColor = "#2a4a2a";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!copied) {
+          (e.currentTarget as HTMLButtonElement).style.color = "#555";
+          (e.currentTarget as HTMLButtonElement).style.borderColor = "#222";
+        }
+      }}
+    >
+      {copied ? "✓ Copied" : "Copy curl"}
+    </button>
   );
 }
 
@@ -590,6 +642,9 @@ export default function SavedConfigsPage() {
                       >
                         {copiedShareId === config.id ? "✓ Copied" : "↗ Share"}
                       </button>
+
+                      {/* Copy curl */}
+                      <ConfigCurlCopyButton config={config} />
 
                       {/* Rename button */}
                       <button
