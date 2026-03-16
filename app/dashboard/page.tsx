@@ -7,6 +7,8 @@ import CopyButton from "@/components/CopyButton";
 import { WeeklyUsageChart, RecentPresets } from "@/components/DashboardCharts";
 import { PLANS, type PlanId } from "@/lib/plans";
 import OnboardingModal from "@/components/OnboardingModal";
+import UpgradeBanner from "@/components/UpgradeBanner";
+import ActivityFeed from "@/components/ActivityFeed";
 
 type SavedConfig = {
   id: string;
@@ -138,6 +140,7 @@ export default async function DashboardPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       <OnboardingModal />
+      {isFree && <UpgradeBanner plan={plan} />}
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
@@ -432,6 +435,9 @@ export default async function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* ── Activity feed (localStorage client-side) ── */}
+      <ActivityFeed />
 
       {/* ── Recent API activity (collapsed by default) ── */}
       <details style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: "12px", overflow: "hidden" }}>
