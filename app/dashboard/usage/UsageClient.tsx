@@ -138,7 +138,7 @@ export default function UsageClient({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `costsignal-usage-${fromDate}-${toDate}.csv`;
+    a.download = `costsignal-usage-${from}-${to}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -174,9 +174,21 @@ export default function UsageClient({
           <button
             onClick={handleExportCsv}
             disabled={filteredLogs.length === 0}
-            className="px-4 py-2 text-sm font-medium rounded-lg bg-bg2 border border-border text-gray-300 hover:text-white hover:border-gray-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              background: "#1a1a1a",
+              color: filteredLogs.length === 0 ? "#555" : "#aaa",
+              border: "1px solid #2a2a2a",
+              borderRadius: "6px",
+              padding: "0.35rem 0.75rem",
+              fontSize: "0.78rem",
+              fontWeight: 500,
+              cursor: filteredLogs.length === 0 ? "not-allowed" : "pointer",
+              opacity: filteredLogs.length === 0 ? 0.5 : 1,
+              transition: "all 0.15s",
+              whiteSpace: "nowrap",
+            }}
           >
-            ↓ Export CSV
+            {filteredLogs.length === 0 ? "No data" : "Export CSV ↓"}
           </button>
         </div>
       </div>
