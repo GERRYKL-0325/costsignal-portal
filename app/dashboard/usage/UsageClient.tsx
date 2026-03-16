@@ -4,6 +4,110 @@ import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
 import { WeeklyUsageChart } from "@/components/DashboardCharts";
 
+// ── Series breakdown ──────────────────────────────────────────────────────────
+function SeriesBreakdown({ logs }: { logs: { series_requested: string[] | null }[] }) {
+  const counts: Record<string, number> = {};
+  for (const log of logs) {
+    for (const slug of log.series_requested ?? []) {
+      counts[slug] = (counts[slug] ?? 0) + 1;
+    }
+  }
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const max = sorted[0]?.[1] ?? 1;
+
+  if (sorted.length === 0) {
+    return (
+      <div style={{ padding: "3rem 1.5rem", textAlign: "center" }}>
+        <div style={{ fontSize: "2rem", marginBottom: "0.75rem" }}>📊</div>
+        <p style={{ color: "#aaa", fontWeight: 600, fontSize: "0.85rem", margin: "0 0 0.3rem" }}>
+          No series data yet
+        </p>
+        <p style={{ color: "#444", fontSize: "0.75rem" }}>
+          Series usage will appear here once you make API requests with slugs.
+        </p>
+      </div>
+    );
+  }
+
+  const SOURCE_COLORS: Record<string, string> = {
+    bls: "#4ade80",
+    eia: "#60a5fa",
+    fred: "#f59e0b",
+  };
+
+  function getSourceColor(slug: string): string {
+    const prefix = slug.split("-")[0];
+    return SOURCE_COLORS[prefix] ?? "#555";
+  }
+
+  return (
+    <div style={{ padding: "1rem 1.25rem 1.25rem" }}>
+      <div style={{ marginBottom: "0.875rem", display: "flex", alignItems: "center", gap: "0.75rem" }}>
+        <span style={{ fontSize: "0.72rem", color: "#555" }}>
+          {sorted.length} unique series across {logs.length} calls
+        </span>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          {Object.entries(SOURCE_COLORS).map(([src, color]) => (
+            <span key={src} style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.65rem", color: "#666" }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, display: "inline-block" }} />
+              {src.toUpperCase()}
+            </span>
+          ))}
+        </div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        {sorted.slice(0, 20).map(([slug, count], i) => {
+          const pct = Math.round((count / max) * 100);
+          const color = getSourceColor(slug);
+          return (
+            <div key={slug} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              <span style={{ fontSize: "0.62rem", color: "#333", width: "1.25rem", textAlign: "right", flexShrink: 0 }}>
+                {i + 1}
+              </span>
+              <code
+                style={{
+                  fontSize: "0.72rem",
+                  color: "#bbb",
+                  fontFamily: "monospace",
+                  width: "17rem",
+                  flexShrink: 0,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <span style={{ color, marginRight: "0.3rem", fontWeight: 700 }}>
+                  {slug.split("-")[0].toUpperCase()}
+                </span>
+                {slug.split("-").slice(1).join("-")}
+              </code>
+              <div style={{ flex: 1, height: "5px", background: "#1a1a1a", borderRadius: "100px", overflow: "hidden" }}>
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${pct}%`,
+                    background: i === 0 ? color : color + "55",
+                    borderRadius: "100px",
+                    transition: "width 0.3s ease",
+                  }}
+                />
+              </div>
+              <span style={{ fontSize: "0.7rem", color: "#555", width: "2.75rem", textAlign: "right", flexShrink: 0 }}>
+                {count.toLocaleString()}×
+              </span>
+            </div>
+          );
+        })}
+        {sorted.length > 20 && (
+          <p style={{ fontSize: "0.7rem", color: "#444", textAlign: "center", margin: "0.5rem 0 0" }}>
+            +{sorted.length - 20} more series
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 type UsageLog = {
   id: number;
   endpoint: string;
@@ -96,6 +200,7 @@ export default function UsageClient({
   const [from, setFrom] = useState(fromDate);
   const [to, setTo] = useState(toDate);
   const [endpointFilter, setEndpointFilter] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"logs" | "series">("logs");
 
   // Derive unique endpoints sorted by frequency
   const endpointCounts = logs.reduce<Record<string, number>>((acc, l) => {
@@ -311,7 +416,44 @@ export default function UsageClient({
         </div>
       )}
 
+      {/* Tab bar */}
+      <div style={{ display: "flex", gap: "0.125rem", borderBottom: "1px solid #1a1a1a", paddingBottom: "0" }}>
+        {(["logs", "series"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            style={{
+              background: "transparent",
+              border: "none",
+              borderBottom: `2px solid ${activeTab === tab ? "#4ade80" : "transparent"}`,
+              color: activeTab === tab ? "#e8e8e8" : "#555",
+              padding: "0.5rem 1rem",
+              fontSize: "0.82rem",
+              fontWeight: activeTab === tab ? 600 : 400,
+              cursor: "pointer",
+              transition: "color 0.15s",
+              marginBottom: "-1px",
+            }}
+          >
+            {tab === "logs" ? "Request Logs" : "By Series"}
+          </button>
+        ))}
+      </div>
+
       {/* Logs table */}
+      {activeTab === "series" ? (
+        <div className="bg-bg2 border border-border rounded-xl overflow-hidden">
+          <div style={{ padding: "1rem 1.25rem 0.75rem", borderBottom: "1px solid #1a1a1a" }}>
+            <h2 style={{ fontSize: "0.85rem", fontWeight: 600, color: "#fff", margin: 0 }}>
+              Series call frequency
+            </h2>
+            <p style={{ fontSize: "0.72rem", color: "#555", margin: "0.2rem 0 0" }}>
+              How many times each series slug appeared in requests within this date range
+            </p>
+          </div>
+          <SeriesBreakdown logs={filteredLogs} />
+        </div>
+      ) : (
       <div className="bg-bg2 border border-border rounded-xl overflow-hidden">
         {filteredLogs.length === 0 ? (
           <div style={{ padding: "3.5rem 1.5rem", textAlign: "center" }}>
@@ -402,8 +544,9 @@ export default function UsageClient({
           </div>
         )}
       </div>
+      )}
 
-      {logs.length >= 500 && (
+      {activeTab === "logs" && logs.length >= 500 && (
         <p className="text-xs text-gray-500 text-center">
           Showing first 500 results. Narrow the date range for more specific results.
         </p>
