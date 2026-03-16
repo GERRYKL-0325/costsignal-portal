@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase";
 import { PLANS, type PlanId } from "@/lib/plans";
+import { PresetSparkline } from "@/components/PresetSparkline";
+import { SourceBadges } from "@/components/SourceBadges";
 
 async function getPlatformData(userId: string, userEmail?: string) {
   let { data: dbUser } = await supabaseAdmin
@@ -212,13 +214,20 @@ export default async function PlatformPage() {
           <div className="divide-y divide-border">
             {configs.map(config => (
               <div key={config.id} className="px-5 py-4 flex items-center justify-between gap-4">
+                {/* Sparkline */}
+                <div style={{ flexShrink: 0, opacity: 0.8 }}>
+                  <PresetSparkline slugs={config.series_slugs} width={56} height={24} />
+                </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-white truncate">{config.name}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {config.series_slugs.length} series
-                    {config.from_year && config.to_year ? ` · ${config.from_year}–${config.to_year}` : ""}
-                    {" "}· {new Date(config.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                  </p>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap", marginTop: "0.15rem" }}>
+                    <p className="text-xs text-gray-500" style={{ margin: 0 }}>
+                      {config.series_slugs.length} series
+                      {config.from_year && config.to_year ? ` · ${config.from_year}–${config.to_year}` : ""}
+                      {" "}· {new Date(config.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    </p>
+                    <SourceBadges slugs={config.series_slugs} />
+                  </div>
                   {config.description && (
                     <p className="text-xs text-gray-600 mt-0.5 truncate">{config.description}</p>
                   )}
@@ -247,8 +256,16 @@ export default async function PlatformPage() {
           <h2 className="text-sm font-semibold text-white">Recent Downloads</h2>
         </div>
         {downloads.length === 0 ? (
-          <div className="px-5 py-10 text-center text-gray-500 text-sm">
-            No downloads logged yet.
+          <div style={{ padding: "2.5rem 1.5rem", textAlign: "center" }}>
+            <div style={{ fontSize: "1.75rem", marginBottom: "0.625rem" }}>📥</div>
+            <p style={{ color: "#aaa", fontWeight: 600, fontSize: "0.85rem", margin: "0 0 0.3rem" }}>No downloads yet</p>
+            <p style={{ color: "#444", fontSize: "0.75rem", margin: 0 }}>
+              Export data from the{" "}
+              <a href="https://portal.costsignal.io/builder" target="_blank" rel="noopener noreferrer" style={{ color: "#4ade80", textDecoration: "none" }}>
+                Builder
+              </a>{" "}
+              and your history will appear here.
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
