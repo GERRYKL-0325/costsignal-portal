@@ -177,6 +177,7 @@ export default function SavedConfigsPage() {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renamedId, setRenamedId] = useState<string | null>(null); // flash on save
   const [copiedShareId, setCopiedShareId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   function handleShare(config: SavedConfig) {
     const params = new URLSearchParams();
@@ -246,10 +247,19 @@ export default function SavedConfigsPage() {
     setTimeout(() => setRenamedId(null), 2000);
   }
 
+  const filteredConfigs = searchQuery.trim()
+    ? configs.filter(
+        (c) =>
+          c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (c.description ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+          c.series_slugs.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+    : configs;
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-white">Saved Configurations</h1>
           <p className="text-gray-400 mt-1 text-sm">
@@ -263,6 +273,64 @@ export default function SavedConfigsPage() {
           ← Platform
         </Link>
       </div>
+
+      {/* Search bar — only show when there are configs */}
+      {!loading && configs.length > 0 && (
+        <div style={{ position: "relative" }}>
+          <span
+            style={{
+              position: "absolute",
+              left: "0.875rem",
+              top: "50%",
+              transform: "translateY(-50%)",
+              fontSize: "0.85rem",
+              color: "#444",
+              pointerEvents: "none",
+            }}
+          >
+            🔍
+          </span>
+          <input
+            type="text"
+            placeholder="Search by name, description or series slug…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: "100%",
+              background: "#111",
+              border: "1px solid #1e1e1e",
+              borderRadius: "10px",
+              padding: "0.65rem 0.875rem 0.65rem 2.25rem",
+              color: "#e8e8e8",
+              fontSize: "0.875rem",
+              outline: "none",
+              fontFamily: "Inter, sans-serif",
+              boxSizing: "border-box",
+            }}
+            onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "#2a2a2a"; }}
+            onBlur={(e) => { (e.target as HTMLInputElement).style.borderColor = "#1e1e1e"; }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              style={{
+                position: "absolute",
+                right: "0.75rem",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "none",
+                border: "none",
+                color: "#555",
+                cursor: "pointer",
+                fontSize: "0.8rem",
+                padding: "0.15rem 0.3rem",
+              }}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Quota bar */}
       {quota && (
@@ -319,7 +387,7 @@ export default function SavedConfigsPage() {
           Loading configurations…
         </div>
       ) : configs.length === 0 ? (
-        /* Empty state */
+        /* Empty state — no presets at all */
         <div className="bg-bg2 border border-border rounded-xl py-16 text-center">
           <div className="text-3xl mb-4">📂</div>
           <p className="text-gray-400 font-medium text-sm">
@@ -346,10 +414,46 @@ export default function SavedConfigsPage() {
             Open Builder →
           </a>
         </div>
+      ) : filteredConfigs.length === 0 ? (
+        /* No search results */
+        <div style={{
+          background: "#111",
+          border: "1px solid #1e1e1e",
+          borderRadius: "12px",
+          padding: "3rem 1.5rem",
+          textAlign: "center",
+        }}>
+          <div style={{ fontSize: "1.75rem", marginBottom: "0.625rem" }}>🔍</div>
+          <p style={{ color: "#aaa", fontWeight: 600, fontSize: "0.875rem", margin: "0 0 0.3rem" }}>
+            No results for &ldquo;{searchQuery}&rdquo;
+          </p>
+          <p style={{ color: "#444", fontSize: "0.78rem", margin: "0 0 0.875rem" }}>
+            Try a different name or series slug.
+          </p>
+          <button
+            onClick={() => setSearchQuery("")}
+            style={{
+              background: "transparent",
+              border: "1px solid #2a2a2a",
+              borderRadius: "7px",
+              padding: "0.4rem 1rem",
+              color: "#aaa",
+              fontSize: "0.8rem",
+              cursor: "pointer",
+            }}
+          >
+            Clear search
+          </button>
+        </div>
       ) : (
         <div className="bg-bg2 border border-border rounded-xl overflow-hidden">
+          {searchQuery && (
+            <div style={{ padding: "0.625rem 1.25rem", borderBottom: "1px solid #1a1a1a", fontSize: "0.72rem", color: "#555" }}>
+              {filteredConfigs.length} result{filteredConfigs.length !== 1 ? "s" : ""} for &ldquo;{searchQuery}&rdquo;
+            </div>
+          )}
           <div className="divide-y divide-border">
-            {configs.map((config) => (
+            {filteredConfigs.map((config) => (
               <div key={config.id} className="px-5 py-4">
                 {renamingId === config.id ? (
                   <RenameRow
