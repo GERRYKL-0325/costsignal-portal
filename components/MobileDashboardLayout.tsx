@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ReactNode } from "react";
 import SidebarNav, { SidebarBottom } from "@/components/SidebarNav";
 import SidebarPlanBadge from "@/components/SidebarPlanBadge";
+import CommandPalette from "@/components/CommandPalette";
 
 interface MobileDashboardLayoutProps {
   children: ReactNode;
@@ -166,6 +167,43 @@ export default function MobileDashboardLayout({
             </button>
           </div>
 
+          {/* Center: Cmd+K hint — hidden on mobile */}
+          <button
+            onClick={() => {
+              // Dispatch synthetic Cmd+K to open palette
+              window.dispatchEvent(
+                new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true })
+              );
+            }}
+            className="hidden md:flex"
+            style={{
+              alignItems: "center",
+              gap: "0.4rem",
+              background: "#111",
+              border: "1px solid #1e1e1e",
+              borderRadius: "8px",
+              padding: "0.3rem 0.75rem",
+              color: "#444",
+              fontSize: "0.72rem",
+              cursor: "pointer",
+              transition: "border-color 0.15s, color 0.15s",
+              fontFamily: "Inter, sans-serif",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "#2a2a2a";
+              (e.currentTarget as HTMLButtonElement).style.color = "#888";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "#1e1e1e";
+              (e.currentTarget as HTMLButtonElement).style.color = "#444";
+            }}
+          >
+            <span>Search commands</span>
+            <kbd style={{ background: "#1a1a1a", border: "1px solid #222", borderRadius: "3px", padding: "0.1rem 0.3rem", fontSize: "0.65rem", fontFamily: "monospace", color: "#555" }}>
+              ⌘K
+            </kbd>
+          </button>
+
           {/* Right: email + initials avatar */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
             {email && (
@@ -204,6 +242,9 @@ export default function MobileDashboardLayout({
         {/* Page content */}
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </div>
+
+      {/* Global command palette — Cmd+K */}
+      <CommandPalette />
     </div>
   );
 }
