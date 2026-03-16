@@ -302,8 +302,35 @@ export default function UsageClient({
       {/* Logs table */}
       <div className="bg-bg2 border border-border rounded-xl overflow-hidden">
         {filteredLogs.length === 0 ? (
-          <div className="px-5 py-14 text-center text-gray-500 text-sm">
-            {logs.length === 0 ? "No API calls in this date range." : "No calls match the selected endpoint filter."}
+          <div style={{ padding: "3.5rem 1.5rem", textAlign: "center" }}>
+            <div style={{ fontSize: "2rem", marginBottom: "0.875rem" }}>
+              {logs.length === 0 ? "📡" : "🔍"}
+            </div>
+            <p style={{ color: "#ccc", fontWeight: 600, fontSize: "0.9rem", margin: "0 0 0.375rem" }}>
+              {logs.length === 0 ? "No API calls yet" : "No calls match this filter"}
+            </p>
+            <p style={{ color: "#444", fontSize: "0.78rem", margin: "0 0 1.25rem", lineHeight: 1.5 }}>
+              {logs.length === 0
+                ? "Your usage logs will appear here once you start making API requests."
+                : "Try changing the date range or endpoint filter above."}
+            </p>
+            {logs.length === 0 && (
+              <a
+                href="/dashboard/keys"
+                style={{
+                  display: "inline-block",
+                  padding: "0.5rem 1.25rem",
+                  background: "#4ade80",
+                  color: "#000",
+                  fontWeight: 700,
+                  fontSize: "0.8rem",
+                  borderRadius: "7px",
+                  textDecoration: "none",
+                }}
+              >
+                Get your API key →
+              </a>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">

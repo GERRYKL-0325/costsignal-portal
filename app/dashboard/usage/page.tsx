@@ -24,9 +24,37 @@ export default async function UsagePage({
     return (
       <div className="max-w-5xl mx-auto">
         <h1 className="text-2xl font-bold text-white mb-2">Usage Logs</h1>
-        <p className="text-gray-400 text-sm">
-          No usage data yet. Make your first API call to see logs here.
-        </p>
+        <div style={{
+          background: "#111",
+          border: "1px solid #1e1e1e",
+          borderRadius: "16px",
+          padding: "3.5rem 2rem",
+          textAlign: "center",
+          marginTop: "1.5rem",
+        }}>
+          <div style={{ fontSize: "2rem", marginBottom: "0.875rem" }}>📡</div>
+          <p style={{ color: "#ccc", fontWeight: 600, fontSize: "0.9rem", margin: "0 0 0.375rem" }}>
+            No usage data yet
+          </p>
+          <p style={{ color: "#444", fontSize: "0.78rem", margin: "0 0 1.25rem" }}>
+            Your API call logs will appear here once you start making requests.
+          </p>
+          <a
+            href="/dashboard/keys"
+            style={{
+              display: "inline-block",
+              padding: "0.5rem 1.25rem",
+              background: "#4ade80",
+              color: "#000",
+              fontWeight: 700,
+              fontSize: "0.8rem",
+              borderRadius: "7px",
+              textDecoration: "none",
+            }}
+          >
+            Get your API key →
+          </a>
+        </div>
       </div>
     );
   }
