@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { PresetSparkline } from "./PresetSparkline";
 
 type DayCount = { date: string; count: number }; // date: "Mon 10", count: N
 
@@ -262,7 +263,11 @@ export function RecentPresets({ configs }: { configs: SavedConfig[] }) {
               (e.currentTarget as HTMLAnchorElement).style.background = "#0d0d0d";
             }}
           >
-            <div style={{ minWidth: 0 }}>
+            {/* Sparkline thumbnail */}
+            <div style={{ flexShrink: 0, marginRight: "0.75rem", opacity: 0.85 }}>
+              <PresetSparkline slugs={cfg.series_slugs} width={72} height={32} />
+            </div>
+            <div style={{ minWidth: 0, flex: 1 }}>
               <p
                 style={{
                   fontSize: "0.82rem",
@@ -272,7 +277,7 @@ export function RecentPresets({ configs }: { configs: SavedConfig[] }) {
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
-                  maxWidth: "260px",
+                  maxWidth: "220px",
                 }}
               >
                 {cfg.name}

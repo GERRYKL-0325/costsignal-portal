@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { PresetSparkline } from "@/components/PresetSparkline";
+import { SourceBadges } from "@/components/SourceBadges";
 
 type SavedConfig = {
   id: string;
@@ -288,6 +290,10 @@ export default function SavedConfigsPage() {
                   />
                 ) : (
                   <div className="flex items-start justify-between gap-4">
+                    {/* Sparkline */}
+                    <div style={{ flexShrink: 0, paddingTop: "0.2rem", opacity: 0.8 }}>
+                      <PresetSparkline slugs={config.series_slugs} width={64} height={28} />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p
@@ -340,6 +346,7 @@ export default function SavedConfigsPage() {
                             {config.format}
                           </span>
                         )}
+                        <SourceBadges slugs={config.series_slugs} />
                       </div>
                       {config.description && (
                         <p className="text-xs text-gray-500 mt-1">
@@ -408,7 +415,7 @@ export default function SavedConfigsPage() {
                           whiteSpace: "nowrap",
                         }}
                       >
-                        {copiedShareId === config.id ? "✓" : "⟳ Share"}
+                        {copiedShareId === config.id ? "✓ Copied" : "↗ Share"}
                       </button>
 
                       {/* Rename button */}
