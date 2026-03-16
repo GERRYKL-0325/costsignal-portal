@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import CopyButton from "@/components/CopyButton";
 
 function CacheRefreshLine() {
@@ -42,6 +42,182 @@ type ActiveKey = {
   label: string;
 } | null;
 
+// ── New-key modal ─────────────────────────────────────────────────────────────
+function NewKeyModal({ rawKey, onClose }: { rawKey: string; onClose: () => void }) {
+  const [copied, setCopied] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function handleCopy() {
+    navigator.clipboard.writeText(rawKey).catch(() => {});
+    setCopied(true);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.85)",
+        backdropFilter: "blur(8px)",
+        zIndex: 9999,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "1.5rem",
+      }}
+    >
+      <div
+        style={{
+          background: "#0a0a0a",
+          border: "1px solid #2a4a2a",
+          borderRadius: "20px",
+          padding: "2.25rem 2rem",
+          maxWidth: "520px",
+          width: "100%",
+          boxShadow: "0 0 60px rgba(74,222,128,0.08)",
+        }}
+      >
+        {/* Icon */}
+        <div
+          style={{
+            width: "56px",
+            height: "56px",
+            borderRadius: "50%",
+            background: "#0d2e1a",
+            border: "2px solid #4ade80",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "1.5rem",
+            margin: "0 auto 1.25rem",
+          }}
+        >
+          🔑
+        </div>
+
+        <h2
+          style={{
+            color: "#4ade80",
+            fontSize: "1.25rem",
+            fontWeight: 700,
+            textAlign: "center",
+            margin: "0 0 0.4rem",
+          }}
+        >
+          Your API key is ready
+        </h2>
+        <p
+          style={{
+            color: "#888",
+            fontSize: "0.82rem",
+            textAlign: "center",
+            margin: "0 0 1.75rem",
+            lineHeight: 1.5,
+          }}
+        >
+          Copy and store this key somewhere safe.{" "}
+          <strong style={{ color: "#f87171" }}>
+            You won&apos;t be able to see it again.
+          </strong>
+        </p>
+
+        {/* Key display */}
+        <div
+          style={{
+            background: "#111",
+            border: "1px solid #2a2a2a",
+            borderRadius: "10px",
+            padding: "0.875rem 1rem",
+            marginBottom: "1rem",
+          }}
+        >
+          <code
+            style={{
+              fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+              fontSize: "0.82rem",
+              color: "#e8e8e8",
+              wordBreak: "break-all",
+              letterSpacing: "0.02em",
+            }}
+          >
+            {rawKey}
+          </code>
+        </div>
+
+        {/* Copy button (big) */}
+        <button
+          onClick={handleCopy}
+          style={{
+            width: "100%",
+            padding: "0.875rem",
+            background: copied ? "#0d2e1a" : "#4ade80",
+            color: copied ? "#4ade80" : "#000",
+            border: copied ? "1px solid #1a4a1a" : "none",
+            borderRadius: "10px",
+            fontSize: "0.95rem",
+            fontWeight: 700,
+            cursor: "pointer",
+            transition: "all 0.2s",
+            marginBottom: "0.75rem",
+          }}
+        >
+          {copied ? "✓ Copied to clipboard!" : "Copy API Key"}
+        </button>
+
+        {/* Warning */}
+        <div
+          style={{
+            background: "#1a0a0a",
+            border: "1px solid #3a1a1a",
+            borderRadius: "8px",
+            padding: "0.75rem 1rem",
+            marginBottom: "1.25rem",
+          }}
+        >
+          <p
+            style={{
+              color: "#f87171",
+              fontSize: "0.78rem",
+              margin: 0,
+              lineHeight: 1.5,
+            }}
+          >
+            ⚠️ <strong>Save this now.</strong> This key will never be shown
+            again. If you lose it, you&apos;ll need to regenerate a new one.
+          </p>
+        </div>
+
+        <button
+          onClick={onClose}
+          style={{
+            width: "100%",
+            padding: "0.6rem",
+            background: "transparent",
+            color: "#555",
+            border: "1px solid #2a2a2a",
+            borderRadius: "8px",
+            fontSize: "0.82rem",
+            cursor: "pointer",
+            transition: "color 0.15s, border-color 0.15s",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.color = "#aaa";
+            (e.currentTarget as HTMLButtonElement).style.borderColor = "#444";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.color = "#555";
+            (e.currentTarget as HTMLButtonElement).style.borderColor = "#2a2a2a";
+          }}
+        >
+          I&apos;ve saved it — close
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function KeysClient({
   activeKey,
   newlyGeneratedKey,
@@ -56,6 +232,7 @@ export default function KeysClient({
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [newKey, setNewKey] = useState<string | null>(newlyGeneratedKey);
   const [currentKey, setCurrentKey] = useState(activeKey);
+  const [showNewKeyModal, setShowNewKeyModal] = useState(!!newlyGeneratedKey);
 
   async function handleRegenerate() {
     setIsRegenerating(true);
@@ -70,6 +247,7 @@ export default function KeysClient({
         setNewKey(data.rawKey);
         setCurrentKey(data.key);
         setShowModal(false);
+        setShowNewKeyModal(true);
       }
     } catch (err) {
       console.error("Regeneration failed", err);
@@ -84,6 +262,11 @@ export default function KeysClient({
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      {/* New key modal overlay */}
+      {showNewKeyModal && newKey && (
+        <NewKeyModal rawKey={newKey} onClose={() => setShowNewKeyModal(false)} />
+      )}
+
       <div>
         <h1 className="text-2xl font-bold text-white">API Keys</h1>
         <p className="text-gray-400 text-sm mt-1">
@@ -93,29 +276,6 @@ export default function KeysClient({
           <CacheRefreshLine />
         </div>
       </div>
-
-      {/* Newly generated key callout */}
-      {newKey && (
-        <div className="bg-accent/10 border border-accent/30 rounded-xl p-5">
-          <div className="flex items-start gap-3">
-            <span className="text-accent text-lg">✓</span>
-            <div className="flex-1">
-              <p className="text-accent font-semibold text-sm mb-1">
-                Your new API key — save it now!
-              </p>
-              <p className="text-gray-400 text-xs mb-3">
-                This is the only time it will be displayed. We store a hash, not the key itself.
-              </p>
-              <div className="flex items-center gap-3">
-                <code className="flex-1 font-mono text-sm bg-bg border border-border rounded-lg px-4 py-2.5 text-white break-all">
-                  {newKey}
-                </code>
-                <CopyButton value={newKey} label="Copy key" />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Current key card */}
       <div className="bg-bg2 border border-border rounded-xl overflow-hidden">
