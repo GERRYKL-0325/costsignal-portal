@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { PLANS, type PlanId } from "@/lib/plans";
 
 export async function GET() {
   const { userId } = await auth();
@@ -18,8 +19,17 @@ export async function GET() {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
+  const plan = (dbUser.plan ?? "free") as PlanId;
+  const planDetails = PLANS[plan];
+
   return NextResponse.json({
-    plan: dbUser.plan ?? "free",
+    plan,
     plan_started_at: dbUser.plan_started_at,
+    savedConfigs: planDetails.savedConfigs,
+    apiCallsPerMonth: planDetails.apiCallsPerMonth,
+    maxSeries: planDetails.maxSeries,
+    maxDownloadsPerMonth: planDetails.maxDownloadsPerMonth,
+    historyYears: planDetails.historyYears,
+    apiAccess: planDetails.apiAccess,
   });
 }

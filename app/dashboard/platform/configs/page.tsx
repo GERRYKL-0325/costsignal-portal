@@ -165,10 +165,13 @@ function RenameRow({
   );
 }
 
+type PlanQuota = { used: number; limit: number; plan: string } | null;
+
 // ── Main page ──────────────────────────────────────────────────────────────────
 export default function SavedConfigsPage() {
   const [configs, setConfigs] = useState<SavedConfig[]>([]);
   const [loading, setLoading] = useState(true);
+  const [quota, setQuota] = useState<PlanQuota>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -189,10 +192,23 @@ export default function SavedConfigsPage() {
 
   async function fetchConfigs() {
     setLoading(true);
-    const res = await fetch("/api/user/configs");
-    if (res.ok) {
-      const data = await res.json();
-      setConfigs(data.configs ?? []);
+    const [configsRes, planRes] = await Promise.all([
+      fetch("/api/user/configs"),
+      fetch("/api/user/plan"),
+    ]);
+    let fetchedConfigs: SavedConfig[] = [];
+    if (configsRes.ok) {
+      const data = await configsRes.json();
+      fetchedConfigs = data.configs ?? [];
+      setConfigs(fetchedConfigs);
+    }
+    if (planRes.ok) {
+      const planData = await planRes.json();
+      setQuota({
+        used: fetchedConfigs.length,
+        limit: planData.savedConfigs ?? 1,
+        plan: planData.plan ?? "free",
+      });
     }
     setLoading(false);
   }
@@ -205,7 +221,11 @@ export default function SavedConfigsPage() {
     setDeletingId(id);
     const res = await fetch(`/api/user/configs/${id}`, { method: "DELETE" });
     if (res.ok) {
-      setConfigs((prev) => prev.filter((c) => c.id !== id));
+      setConfigs((prev) => {
+        const updated = prev.filter((c) => c.id !== id);
+        setQuota((q) => q ? { ...q, used: updated.length } : q);
+        return updated;
+      });
     }
     setDeletingId(null);
     setConfirmDeleteId(null);
@@ -243,6 +263,55 @@ export default function SavedConfigsPage() {
           ← Platform
         </Link>
       </div>
+
+      {/* Quota bar */}
+      {quota && (
+        <div style={{
+          background: "#111",
+          border: "1px solid #1e1e1e",
+          borderRadius: "10px",
+          padding: "0.875rem 1.25rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "1rem",
+          flexWrap: "wrap",
+        }}>
+          <div style={{ flex: 1, minWidth: "180px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.4rem" }}>
+              <span style={{ fontSize: "0.72rem", color: "#666", fontWeight: 600 }}>
+                Preset slots used
+              </span>
+              <span style={{ fontSize: "0.72rem", fontWeight: 700, color: quota.used >= quota.limit ? "#f87171" : "#aaa" }}>
+                {quota.used} / {quota.limit === 999 ? "∞" : quota.limit}
+              </span>
+            </div>
+            <div style={{ height: "4px", background: "#1a1a1a", borderRadius: "100px", overflow: "hidden" }}>
+              {quota.limit !== 999 && (
+                <div style={{
+                  height: "100%",
+                  width: `${Math.min(100, Math.round((quota.used / quota.limit) * 100))}%`,
+                  background: quota.used >= quota.limit ? "#f87171" : quota.used / quota.limit >= 0.8 ? "#facc15" : "#4ade80",
+                  borderRadius: "100px",
+                  transition: "width 0.3s ease",
+                }} />
+              )}
+            </div>
+          </div>
+          {quota.plan === "free" && quota.used >= quota.limit && (
+            <Link
+              href="/pricing"
+              style={{
+                fontSize: "0.75rem", fontWeight: 700, color: "#000",
+                background: "#4ade80", padding: "0.35rem 0.875rem",
+                borderRadius: "6px", textDecoration: "none", whiteSpace: "nowrap",
+                flexShrink: 0,
+              }}
+            >
+              Upgrade for more →
+            </Link>
+          )}
+        </div>
+      )}
 
       {/* Content */}
       {loading ? (
