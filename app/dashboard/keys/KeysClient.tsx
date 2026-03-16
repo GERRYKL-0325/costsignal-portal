@@ -302,6 +302,52 @@ export default function KeysClient({
               </div>
             </div>
 
+            {/* Key age + rotation nudge */}
+            {(() => {
+              const keyAgeDays = Math.floor((Date.now() - new Date(currentKey.created_at).getTime()) / 86_400_000);
+              const showNudge = keyAgeDays >= 90;
+              return (
+                <div style={{
+                  background: showNudge ? "#1a0f00" : "#0a0a0a",
+                  border: `1px solid ${showNudge ? "#3a2a00" : "#1a1a1a"}`,
+                  borderRadius: "8px",
+                  padding: "0.625rem 1rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.625rem",
+                  flexWrap: "wrap",
+                }}>
+                  <span style={{ fontSize: "0.95rem" }}>{showNudge ? "🔄" : "🔒"}</span>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ margin: 0, fontSize: "0.78rem", color: showNudge ? "#facc15" : "#888", fontWeight: showNudge ? 600 : 400 }}>
+                      {showNudge
+                        ? `Key is ${keyAgeDays} days old — consider rotating for security`
+                        : `Key age: ${keyAgeDays === 0 ? "created today" : `${keyAgeDays} day${keyAgeDays !== 1 ? "s" : ""}`}`}
+                    </p>
+                    {showNudge && (
+                      <p style={{ margin: "0.15rem 0 0", fontSize: "0.7rem", color: "#665a00", lineHeight: 1.4 }}>
+                        Best practice: rotate API keys every 90 days. Click &quot;Regenerate&quot; below.
+                      </p>
+                    )}
+                  </div>
+                  {!showNudge && (
+                    <span style={{
+                      fontSize: "0.65rem",
+                      color: keyAgeDays < 30 ? "#4ade80" : keyAgeDays < 60 ? "#aaa" : "#facc15",
+                      background: keyAgeDays < 30 ? "#0d2e1a" : keyAgeDays < 60 ? "#1a1a1a" : "#1a1500",
+                      border: `1px solid ${keyAgeDays < 30 ? "#1a3a1a" : keyAgeDays < 60 ? "#2a2a2a" : "#2a2500"}`,
+                      borderRadius: "100px",
+                      padding: "0.15rem 0.5rem",
+                      fontWeight: 600,
+                      whiteSpace: "nowrap",
+                    }}>
+                      {keyAgeDays < 30 ? "✓ Fresh" : keyAgeDays < 60 ? "Good" : "⚠ Aging"}
+                    </span>
+                  )}
+                </div>
+              );
+            })()}
+
             {/* Metadata */}
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
