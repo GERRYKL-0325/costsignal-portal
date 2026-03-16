@@ -6,6 +6,7 @@ import { getActiveKey } from "@/lib/api-keys";
 import CopyButton from "@/components/CopyButton";
 import { WeeklyUsageChart, RecentPresets } from "@/components/DashboardCharts";
 import { PLANS, type PlanId } from "@/lib/plans";
+import OnboardingModal from "@/components/OnboardingModal";
 
 type SavedConfig = {
   id: string;
@@ -136,6 +137,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
+      <OnboardingModal />
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
