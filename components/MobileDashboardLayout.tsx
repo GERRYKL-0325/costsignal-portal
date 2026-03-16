@@ -5,6 +5,7 @@ import { ReactNode } from "react";
 import SidebarNav, { SidebarBottom } from "@/components/SidebarNav";
 import SidebarPlanBadge from "@/components/SidebarPlanBadge";
 import CommandPalette from "@/components/CommandPalette";
+import ShortcutsModal from "@/components/ShortcutsModal";
 
 interface MobileDashboardLayoutProps {
   children: ReactNode;
@@ -204,6 +205,40 @@ export default function MobileDashboardLayout({
             </kbd>
           </button>
 
+          {/* Shortcuts hint */}
+          <button
+            onClick={() => {
+              // Dispatch synthetic ? keydown to open shortcuts modal
+              window.dispatchEvent(new KeyboardEvent("keydown", { key: "?", bubbles: true }));
+            }}
+            className="hidden sm:flex"
+            title="Keyboard shortcuts (?)"
+            style={{
+              alignItems: "center",
+              gap: "0.35rem",
+              background: "transparent",
+              border: "1px solid #1e1e1e",
+              borderRadius: "6px",
+              padding: "0.3rem 0.6rem",
+              cursor: "pointer",
+              color: "#444",
+              fontSize: "0.72rem",
+              transition: "border-color 0.15s, color 0.15s",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "#333";
+              (e.currentTarget as HTMLButtonElement).style.color = "#888";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "#1e1e1e";
+              (e.currentTarget as HTMLButtonElement).style.color = "#444";
+            }}
+          >
+            <kbd style={{ background: "#1a1a1a", border: "1px solid #222", borderRadius: "3px", padding: "0.1rem 0.35rem", fontSize: "0.65rem", fontFamily: "monospace", color: "#555" }}>
+              ?
+            </kbd>
+          </button>
+
           {/* Right: email + initials avatar */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
             {email && (
@@ -245,6 +280,7 @@ export default function MobileDashboardLayout({
 
       {/* Global command palette — Cmd+K */}
       <CommandPalette />
+      <ShortcutsModal />
     </div>
   );
 }
