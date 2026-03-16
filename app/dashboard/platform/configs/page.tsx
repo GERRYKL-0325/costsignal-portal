@@ -171,6 +171,19 @@ export default function SavedConfigsPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renamedId, setRenamedId] = useState<string | null>(null); // flash on save
+  const [copiedShareId, setCopiedShareId] = useState<string | null>(null);
+
+  function handleShare(config: SavedConfig) {
+    const params = new URLSearchParams();
+    if (config.series_slugs?.length) params.set("slugs", config.series_slugs.join(","));
+    if (config.from_year) params.set("from", `${config.from_year}-1`);
+    if (config.to_year) params.set("to", `${config.to_year}-12`);
+    if (config.format) params.set("format", config.format);
+    const url = `https://portal.costsignal.io/builder?${params.toString()}`;
+    navigator.clipboard.writeText(url).catch(() => {});
+    setCopiedShareId(config.id);
+    setTimeout(() => setCopiedShareId(null), 2000);
+  }
 
   async function fetchConfigs() {
     setLoading(true);
@@ -377,6 +390,26 @@ export default function SavedConfigsPage() {
                       >
                         Load →
                       </a>
+
+                      {/* Share button */}
+                      <button
+                        onClick={() => handleShare(config)}
+                        title="Copy shareable builder link"
+                        style={{
+                          fontSize: "0.75rem",
+                          color: copiedShareId === config.id ? "#4ade80" : "#555",
+                          background: copiedShareId === config.id ? "#0d2e1a" : "transparent",
+                          border: `1px solid ${copiedShareId === config.id ? "#1a4a1a" : "#222"}`,
+                          padding: "0.3rem 0.55rem",
+                          borderRadius: "6px",
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                          lineHeight: 1,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {copiedShareId === config.id ? "✓" : "⟳ Share"}
+                      </button>
 
                       {/* Rename button */}
                       <button
