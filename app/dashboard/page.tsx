@@ -233,10 +233,50 @@ export default async function DashboardPage() {
             Your API Key
           </div>
           {activeKey ? (
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <code style={{ fontSize: "0.85rem", color: "#e8e8e8", fontFamily: "monospace" }}>
-                {activeKey.key_prefix}••••••
-              </code>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" }}>
+                <code style={{ fontSize: "0.85rem", color: "#e8e8e8", fontFamily: "monospace" }}>
+                  {activeKey.key_prefix}••••••
+                </code>
+              </div>
+              {(() => {
+                const lastUsed = activeKey.last_used_at;
+                if (!lastUsed) {
+                  // Key exists but never used
+                  return (
+                    <span style={{ fontSize: "0.68rem", color: "#facc15", background: "#1a1500", border: "1px solid #2a2000", borderRadius: "4px", padding: "0.15rem 0.5rem" }}>
+                      ⚡ Never used — try it in the Builder
+                    </span>
+                  );
+                }
+                const daysSince = Math.floor((Date.now() - new Date(lastUsed).getTime()) / 86_400_000);
+                if (daysSince >= 30) {
+                  return (
+                    <span style={{ fontSize: "0.68rem", color: "#f87171", background: "#1a0a0a", border: "1px solid #2a1010", borderRadius: "4px", padding: "0.15rem 0.5rem" }}>
+                      ⚠ Unused {daysSince}d — key still active
+                    </span>
+                  );
+                }
+                if (daysSince >= 7) {
+                  return (
+                    <span style={{ fontSize: "0.68rem", color: "#666" }}>
+                      Last used {daysSince}d ago
+                    </span>
+                  );
+                }
+                if (daysSince === 0) {
+                  return (
+                    <span style={{ fontSize: "0.68rem", color: "#4ade80" }}>
+                      ✓ Used today
+                    </span>
+                  );
+                }
+                return (
+                  <span style={{ fontSize: "0.68rem", color: "#555" }}>
+                    Last used {daysSince}d ago
+                  </span>
+                );
+              })()}
             </div>
           ) : (
             <div style={{ fontSize: "0.85rem", color: "#4ade80", fontWeight: 600 }}>
