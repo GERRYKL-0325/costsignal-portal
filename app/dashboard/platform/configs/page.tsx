@@ -230,6 +230,7 @@ export default function SavedConfigsPage() {
   const [renamedId, setRenamedId] = useState<string | null>(null); // flash on save
   const [copiedShareId, setCopiedShareId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "name" | "series">("newest");
 
   function handleShare(config: SavedConfig) {
     const params = new URLSearchParams();
@@ -299,14 +300,26 @@ export default function SavedConfigsPage() {
     setTimeout(() => setRenamedId(null), 2000);
   }
 
-  const filteredConfigs = searchQuery.trim()
+  const filteredConfigs = (searchQuery.trim()
     ? configs.filter(
         (c) =>
           c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           (c.description ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
           c.series_slugs.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()))
       )
-    : configs;
+    : [...configs]
+  ).sort((a, b) => {
+    switch (sortBy) {
+      case "oldest":
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      case "name":
+        return a.name.localeCompare(b.name);
+      case "series":
+        return b.series_slugs.length - a.series_slugs.length;
+      default: // newest
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    }
+  });
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -381,6 +394,46 @@ export default function SavedConfigsPage() {
               ✕
             </button>
           )}
+        </div>
+      )}
+
+      {/* Sort pills */}
+      {!loading && configs.length > 1 && (
+        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
+          <span style={{ fontSize: "0.72rem", color: "#555", marginRight: "0.15rem" }}>Sort:</span>
+          {([
+            { key: "newest" as const, label: "Newest first" },
+            { key: "oldest" as const, label: "Oldest first" },
+            { key: "name" as const, label: "Name A→Z" },
+            { key: "series" as const, label: "Most series" },
+          ]).map(({ key, label }) => {
+            const active = sortBy === key;
+            return (
+              <button
+                key={key}
+                onClick={() => setSortBy(key)}
+                style={{
+                  background: active ? "#1a2e1a" : "#111",
+                  color: active ? "#4ade80" : "#555",
+                  border: `1px solid ${active ? "#2a4a2a" : "#1e1e1e"}`,
+                  borderRadius: "100px",
+                  padding: "0.25rem 0.65rem",
+                  fontSize: "0.72rem",
+                  fontWeight: active ? 700 : 400,
+                  cursor: "pointer",
+                  transition: "all 0.15s",
+                }}
+                onMouseEnter={(e) => {
+                  if (!active) (e.currentTarget as HTMLButtonElement).style.color = "#aaa";
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) (e.currentTarget as HTMLButtonElement).style.color = "#555";
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
       )}
 
