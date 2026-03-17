@@ -216,6 +216,49 @@ export default async function DashboardPage() {
         </a>
       </div>
 
+      {/* ── Quick start — 3 preset links ── */}
+      <div>
+        <h2 style={{ fontSize: "0.72rem", fontWeight: 700, color: "#444", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "0.75rem" }}>
+          Quick start
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            { name: "Manufacturing Cost Index", slugs: "bls-ppi-metals,bls-ppi-lumber,eia-crude-wti", from: "2020-1", to: "2024-12" },
+            { name: "Energy & Commodities", slugs: "eia-crude-wti,eia-nat-gas,bls-ppi-petroleum", from: "2020-1", to: "2024-12" },
+            { name: "Labor & Inflation", slugs: "bls-cpi-all,bls-emp-wages,fred-pce", from: "2020-1", to: "2024-12" },
+          ].map((preset) => {
+            const params = new URLSearchParams({ slugs: preset.slugs, from: preset.from, to: preset.to });
+            return (
+              <a
+                key={preset.name}
+                href={`/builder?${params.toString()}`}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.625rem",
+                  background: "#111",
+                  border: "1px solid #1e1e1e",
+                  borderRadius: "10px",
+                  padding: "0.875rem 1rem",
+                  textDecoration: "none",
+                  transition: "border-color 0.15s",
+                }}
+              >
+                <span style={{ fontSize: "1rem", flexShrink: 0 }}>📊</span>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "#e8e8e8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {preset.name}
+                  </div>
+                  <div style={{ fontSize: "0.68rem", color: "#555", marginTop: "0.15rem" }}>
+                    Open in Builder →
+                  </div>
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
       {/* ── Quick access — 3 smaller cards ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* API Key */}
