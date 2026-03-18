@@ -5,6 +5,70 @@ import Link from "next/link";
 import { PresetSparkline } from "@/components/PresetSparkline";
 import { SourceBadges } from "@/components/SourceBadges";
 
+// ── Preset last-opened tracker ────────────────────────────────────────────────
+const LAST_OPENED_KEY = "cs_preset_last_opened";
+
+function getLastOpened(): Record<string, number> {
+  try {
+    const raw = localStorage.getItem(LAST_OPENED_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function trackPresetOpen(id: string) {
+  try {
+    const existing = getLastOpened();
+    localStorage.setItem(LAST_OPENED_KEY, JSON.stringify({ ...existing, [id]: Date.now() }));
+  } catch {
+    // ignore
+  }
+}
+
+function LastOpenedChip({ ts }: { ts: number }) {
+  const diffMs = Date.now() - ts;
+  const diffMin = Math.floor(diffMs / 60_000);
+  let label: string;
+  let color: string;
+  let bg: string;
+  let border: string;
+
+  if (diffMin < 60) {
+    label = diffMin < 1 ? "Opened just now" : `Opened ${diffMin}m ago`;
+    color = "#4ade80"; bg = "#0d2e1a"; border = "#1a3a1a";
+  } else {
+    const diffH = Math.floor(diffMin / 60);
+    if (diffH < 24) {
+      label = `Opened ${diffH}h ago`;
+      color = "#aaa"; bg = "#1a1a1a"; border = "#2a2a2a";
+    } else {
+      const diffD = Math.floor(diffH / 24);
+      if (diffD < 7) {
+        label = `Opened ${diffD}d ago`;
+        color = "#666"; bg = "#111"; border = "#1e1e1e";
+      } else {
+        return null;
+      }
+    }
+  }
+
+  return (
+    <span style={{
+      fontSize: "0.62rem",
+      color,
+      background: bg,
+      border: `1px solid ${border}`,
+      borderRadius: "100px",
+      padding: "0.1rem 0.45rem",
+      fontWeight: 500,
+      whiteSpace: "nowrap",
+    }}>
+      {label}
+    </span>
+  );
+}
+
 type SavedConfig = {
   id: string;
   name: string;
@@ -231,6 +295,11 @@ export default function SavedConfigsPage() {
   const [copiedShareId, setCopiedShareId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "name" | "series">("newest");
+  const [lastOpened, setLastOpened] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    setLastOpened(getLastOpened());
+  }, []);
 
   function handleShare(config: SavedConfig) {
     const params = new URLSearchParams();
@@ -643,14 +712,19 @@ export default function SavedConfigsPage() {
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-700 mt-1">
-                        Saved{" "}
-                        {new Date(config.created_at).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </p>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.25rem", flexWrap: "wrap" }}>
+                        <p className="text-xs text-gray-700" style={{ margin: 0 }}>
+                          Saved{" "}
+                          {new Date(config.created_at).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </p>
+                        {lastOpened[config.id] && (
+                          <LastOpenedChip ts={lastOpened[config.id]} />
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2 flex-shrink-0">
@@ -663,6 +737,10 @@ export default function SavedConfigsPage() {
                         )}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={() => {
+                          trackPresetOpen(config.id);
+                          setLastOpened((prev) => ({ ...prev, [config.id]: Date.now() }));
+                        }}
                         style={{
                           fontSize: "0.78rem",
                           fontWeight: 600,

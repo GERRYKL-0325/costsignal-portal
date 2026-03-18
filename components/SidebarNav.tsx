@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { href: "/dashboard/usage", label: "Usage", sub: "Track your API calls", icon: "📊" },
   { href: "/dashboard/platform", label: "Presets", sub: "Saved configs", icon: "📂" },
   { href: "/dashboard/settings", label: "Settings", sub: "Account & preferences", icon: "⚙️" },
+  { href: "/docs", label: "API Reference", sub: "Endpoints & examples", icon: "📖" },
 ];
 
 export default function SidebarNav() {
