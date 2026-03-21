@@ -1,5 +1,22 @@
-import { redirect } from "next/navigation";
+"use client";
+
+import { SignIn } from "@clerk/nextjs";
 
 export default function SignInPage() {
-  redirect("https://accounts.costsignal.io/sign-in");
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        background: "#0a0a0a",
+      }}
+    >
+      <SignIn
+        fallbackRedirectUrl="/dashboard"
+        signUpUrl="/sign-up"
+      />
+    </div>
+  );
 }
