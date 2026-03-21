@@ -16,7 +16,7 @@ export default async function UsagePage({
   // Get Supabase user
   const { data: dbUser } = await supabaseAdmin
     .from("users")
-    .select("id")
+    .select("id, plan")
     .eq("clerk_user_id", userId)
     .single();
 
@@ -124,6 +124,7 @@ export default async function UsagePage({
       toDate={toDate}
       dayCounts={dayCounts}
       callsThisMonth={monthCountResult.count ?? 0}
+      plan={dbUser.plan ?? "free"}
     />
   );
 }
