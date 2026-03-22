@@ -1,7 +1,12 @@
+import React from "react";
 import Link from "next/link";
+import { auth } from "@clerk/nextjs/server";
 import { PLANS } from "@/lib/plans";
+import { UpgradeButton, ManageBillingButton } from "./PricingClient";
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const { userId } = await auth();
+  const isLoggedIn = !!userId;
   return (
     <>
       {/* Nav */}
@@ -49,9 +54,16 @@ export default function PricingPage() {
               tagline={PLANS.free.tagline}
               features={PLANS.free.features}
               limits={[...PLANS.free.limits]}
-              cta="Create free account"
-              ctaHref="/sign-up"
-              ctaStyle="secondary"
+              cta={
+                <Link href="/sign-up" style={{
+                  display: "block", textAlign: "center", padding: "0.75rem 1.5rem",
+                  background: "transparent", color: "#e8e8e8",
+                  fontWeight: 700, fontSize: "0.875rem", borderRadius: "8px",
+                  textDecoration: "none", border: "1px solid #2a2a2a",
+                }}>
+                  Create free account →
+                </Link>
+              }
               recommended={false}
               badge={null}
             />
@@ -62,9 +74,7 @@ export default function PricingPage() {
               tagline={PLANS.pro.tagline}
               features={PLANS.pro.features}
               limits={[]}
-              cta="Upgrade to Pro"
-              ctaHref="mailto:hello@costsignal.io?subject=CostSignal%20Pro%20Upgrade"
-              ctaStyle="primary"
+              cta={<UpgradeButton plan="pro" label="Upgrade to Pro" style="primary" isLoggedIn={isLoggedIn} />}
               recommended={true}
               badge="Most popular"
             />
@@ -75,9 +85,7 @@ export default function PricingPage() {
               tagline={PLANS.api.tagline}
               features={PLANS.api.features}
               limits={[]}
-              cta="Get API access"
-              ctaHref="mailto:hello@costsignal.io?subject=CostSignal%20API%20Access"
-              ctaStyle="secondary"
+              cta={<UpgradeButton plan="api" label="Get API access" style="secondary" isLoggedIn={isLoggedIn} />}
               recommended={false}
               badge={null}
             />
@@ -130,18 +138,15 @@ export default function PricingPage() {
         <section style={{ maxWidth: "540px", margin: "0 auto", padding: "0 1.5rem 6rem", textAlign: "center" }}>
           <div style={{ background: "#0d1a10", border: "1px solid #1a3a1a", borderRadius: "12px", padding: "2.25rem" }}>
             <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "#e8e8e8", marginBottom: "0.5rem" }}>
-              Ready to upgrade?
+              Already a subscriber?
             </h3>
             <p style={{ fontSize: "0.875rem", color: "#555", lineHeight: 1.7, marginBottom: "1.25rem" }}>
-              Stripe is coming soon. Email us and we&apos;ll upgrade your account within a few hours.
+              Update payment, change plans, or cancel anytime from the Stripe billing portal.
             </p>
-            <a href="mailto:hello@costsignal.io?subject=CostSignal%20Plan%20Upgrade" style={{
-              display: "inline-block", padding: "0.65rem 1.75rem",
-              background: "#4ade80", color: "#000", fontWeight: 700,
-              fontSize: "0.875rem", borderRadius: "8px", textDecoration: "none",
-            }}>
-              hello@costsignal.io →
-            </a>
+            <ManageBillingButton />
+            <p style={{ marginTop: "1rem", fontSize: "0.75rem", color: "#333" }}>
+              Questions? <a href="mailto:hello@costsignal.io" style={{ color: "#555", textDecoration: "none" }}>hello@costsignal.io</a>
+            </p>
           </div>
         </section>
 
@@ -156,10 +161,10 @@ export default function PricingPage() {
   );
 }
 
-function PricingCard({ label, price, tagline, features, limits, cta, ctaHref, ctaStyle, recommended, badge }: {
+function PricingCard({ label, price, tagline, features, limits, cta, recommended, badge }: {
   label: string; price: number; tagline: string;
   features: readonly string[]; limits: string[];
-  cta: string; ctaHref: string; ctaStyle: "primary" | "secondary";
+  cta: React.ReactNode;
   recommended: boolean; badge: string | null;
 }) {
   return (
@@ -207,16 +212,9 @@ function PricingCard({ label, price, tagline, features, limits, cta, ctaHref, ct
         ))}
       </ul>
 
-      <a href={ctaHref} style={{
-        display: "block", textAlign: "center", padding: "0.75rem 1.5rem",
-        background: ctaStyle === "primary" ? "#4ade80" : "transparent",
-        color: ctaStyle === "primary" ? "#000" : "#e8e8e8",
-        fontWeight: 700, fontSize: "0.875rem", borderRadius: "8px",
-        textDecoration: "none", marginTop: "1.5rem",
-        border: ctaStyle === "secondary" ? "1px solid #2a2a2a" : "none",
-      }}>
-        {cta} →
-      </a>
+      <div style={{ marginTop: "1.5rem" }}>
+        {cta}
+      </div>
     </div>
   );
 }
