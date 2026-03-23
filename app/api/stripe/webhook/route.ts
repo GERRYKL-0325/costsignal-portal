@@ -3,7 +3,7 @@ import { stripe } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/supabase";
 import Stripe from "stripe";
 
-export const config = { api: { bodyParser: false } };
+// App Router doesn't need config export — body is read via req.text() directly
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
