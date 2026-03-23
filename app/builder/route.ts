@@ -1,4 +1,4 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { NextResponse } from 'next/server';
 
@@ -7,11 +7,8 @@ export async function GET() {
   if (!userId) {
     redirect('/sign-in');
   }
-
-  const user = await currentUser();
-  const userName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.emailAddresses[0]?.emailAddress || 'User';
-  const userEmail = user?.emailAddresses[0]?.emailAddress || '';
-  const userImage = user?.imageUrl || '';
+  // Redirect to the main builder — simpler and more reliable than proxying
+  redirect('https://costsignal.io/builder');
 
   // Fetch builder HTML from costsignal.io (10s timeout)
   let res: Response;
