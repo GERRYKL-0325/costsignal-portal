@@ -10,7 +10,7 @@ export default function SignUpPage() {
         justifyContent: "center",
         alignItems: "center",
         minHeight: "100vh",
-        background: "#0a0a0a",
+        background: "#111",
       }}
     >
       <SignUp

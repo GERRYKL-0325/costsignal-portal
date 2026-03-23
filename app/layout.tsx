@@ -15,7 +15,7 @@ const clerkAppearance = {
   baseTheme: dark,
   variables: {
     colorPrimary: "#4ade80",
-    colorBackground: "#1a1a1a",
+    colorBackground: "#242424",
     colorInputBackground: "#222222",
     colorInputText: "#e8e8e8",
     colorText: "#e8e8e8",
