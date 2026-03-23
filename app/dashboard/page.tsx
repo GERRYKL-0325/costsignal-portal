@@ -8,6 +8,7 @@ import { WeeklyUsageChart, RecentPresets } from "@/components/DashboardCharts";
 import { PLANS, type PlanId } from "@/lib/plans";
 import OnboardingModal from "@/components/OnboardingModal";
 import UpgradeBanner from "@/components/UpgradeBanner";
+import UpgradeSuccessBanner from "@/components/UpgradeSuccessBanner";
 import ActivityFeed from "@/components/ActivityFeed";
 import QuotaAwareUsageCard from "@/components/QuotaAwareUsageCard";
 
@@ -115,9 +116,14 @@ async function getDashboardStats(userId: string) {
   };
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ upgrade?: string; plan?: string }>;
+}) {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
+  const { upgrade, plan: upgradedPlan } = await searchParams;
 
   const user = await currentUser();
   const firstName = user?.firstName ?? "there";
@@ -141,6 +147,9 @@ export default async function DashboardPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       <OnboardingModal />
+      {upgrade === "success" && upgradedPlan && (
+        <UpgradeSuccessBanner plan={upgradedPlan} />
+      )}
       {isFree && <UpgradeBanner plan={plan} />}
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
