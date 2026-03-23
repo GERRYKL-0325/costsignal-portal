@@ -4,6 +4,9 @@ import { auth } from "@clerk/nextjs/server";
 import { PLANS } from "@/lib/plans";
 import { UpgradeButton, ManageBillingButton } from "./PricingClient";
 
+// Stripe is only active if price IDs are configured
+const STRIPE_ACTIVE = !!(process.env.STRIPE_PRO_PRICE_ID && process.env.STRIPE_SECRET_KEY);
+
 export default async function PricingPage() {
   const { userId } = await auth();
   const isLoggedIn = !!userId;
@@ -74,7 +77,10 @@ export default async function PricingPage() {
               tagline={PLANS.pro.tagline}
               features={PLANS.pro.features}
               limits={[]}
-              cta={<UpgradeButton plan="pro" label="Upgrade to Pro" style="primary" isLoggedIn={isLoggedIn} />}
+              cta={STRIPE_ACTIVE
+                ? <UpgradeButton plan="pro" label="Upgrade to Pro" style="primary" isLoggedIn={isLoggedIn} />
+                : <a href="mailto:hello@costsignal.io?subject=Pro plan interest" style={{display:"block",width:"100%",textAlign:"center",padding:"0.75rem 1.5rem",background:"#4ade80",color:"#000",fontWeight:700,fontSize:"0.875rem",borderRadius:"8px",textDecoration:"none"}}>Join the waitlist →</a>
+              }
               recommended={true}
               badge="Most popular"
             />
@@ -85,7 +91,10 @@ export default async function PricingPage() {
               tagline={PLANS.api.tagline}
               features={PLANS.api.features}
               limits={[]}
-              cta={<UpgradeButton plan="api" label="Get API access" style="secondary" isLoggedIn={isLoggedIn} />}
+              cta={STRIPE_ACTIVE
+                ? <UpgradeButton plan="api" label="Get API access" style="secondary" isLoggedIn={isLoggedIn} />
+                : <a href="mailto:hello@costsignal.io?subject=Enterprise plan interest" style={{display:"block",width:"100%",textAlign:"center",padding:"0.75rem 1.5rem",background:"transparent",color:"#e8e8e8",fontWeight:700,fontSize:"0.875rem",borderRadius:"8px",border:"1px solid #2a2a2a",textDecoration:"none"}}>Contact us →</a>
+              }
               recommended={false}
               badge={null}
             />
