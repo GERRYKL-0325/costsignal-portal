@@ -15,14 +15,24 @@ const clerkAppearance = {
   baseTheme: dark,
   variables: {
     colorPrimary: "#4ade80",
-    colorBackground: "#242424",
-    colorInputBackground: "#222222",
+    colorBackground: "#2a2a2a",
+    colorInputBackground: "#333333",
     colorInputText: "#e8e8e8",
     colorText: "#e8e8e8",
-    colorTextSecondary: "#888888",
+    colorTextSecondary: "#aaaaaa",
     colorDanger: "#f87171",
     borderRadius: "8px",
     fontFamily: "Inter, sans-serif",
+  },
+  elements: {
+    card: {
+      background: "#2a2a2a",
+      border: "1px solid #444",
+      boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
+    },
+    rootBox: {
+      boxShadow: "none",
+    },
   },
 };
 
